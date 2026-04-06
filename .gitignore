@@ -28,7 +28,7 @@ Thumbs.db
 # Pipeline outputs (regenerate: python run_pipeline.py ...)
 /outputs/
 /outputs_full/
-/docs/outputs/*
+# /docs/outputs/*
 !/docs/outputs/.gitkeep
 
 # Large input datasets (GitHub file limit ~100MB; use --input or MERGED_RENT_311_CSV)
