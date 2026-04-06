@@ -1,9 +1,10 @@
 import { CLUSTER_COLORS, equityColor, clamp, INDICATOR_LABELS, fmt } from "./utils.js";
 
-const DATA_GEOJSON = "../outputs/grid_points.geojson";
-const DATA_META = "../outputs/metadata.json";
-const DATA_SUMMARY = "../outputs/cluster_summary.csv";
-const DATA_Z = "../outputs/cluster_feature_zscores.csv";
+// Relative to index.html (fetch base URL), not this file.
+const DATA_GEOJSON = "outputs/grid_points.geojson";
+const DATA_META = "outputs/metadata.json";
+const DATA_SUMMARY = "outputs/cluster_summary.csv";
+const DATA_Z = "outputs/cluster_feature_zscores.csv";
 
 const els = {
   colorMode: document.getElementById("colorMode"),
@@ -38,7 +39,7 @@ const els = {
   pcaN: document.getElementById("pcaN"),
 };
 
-els.dataPath.textContent = DATA_GEOJSON.replace("../", "");
+els.dataPath.textContent = DATA_GEOJSON;
 
 let meta = null;
 let map = null;
