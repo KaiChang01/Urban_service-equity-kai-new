@@ -25,6 +25,9 @@ Thumbs.db
 .env
 .env.*
 
+# Brainstorming mockups (visual companion)
+.superpowers/
+
 # Pipeline outputs (regenerate: python run_pipeline.py ...)
 /outputs/
 /outputs_full/

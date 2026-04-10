@@ -49,6 +49,7 @@ let geo = null;
 let summaryRows = [];
 let zRows = [];
 let zChart = null;
+const EQUITY_HIST_BINS_MAX = 10;
 
 function clusterName(c) {
   if (!meta?.config?.cluster_names) return `Cluster ${c}`;
@@ -68,14 +69,96 @@ function passesFilters(props) {
   return true;
 }
 
+function selectedEquityRange() {
+  const a = clamp(Number(els.equityMin.value), 0, 100);
+  const b = clamp(Number(els.equityMax.value), 0, 100);
+  return [Math.min(a, b), Math.max(a, b)];
+}
+
+function histogramBinsForSpan(span) {
+  // Keep bins readable for narrow ranges (e.g. 46-47) while preserving detail.
+  const bySpan = Math.round(span * 2);
+  return Math.max(4, Math.min(EQUITY_HIST_BINS_MAX, bySpan));
+}
+
+function fmtBinEdge(v, span) {
+  if (span <= 2) return v.toFixed(2);
+  if (span <= 10) return v.toFixed(1);
+  return v.toFixed(0);
+}
+
 function markerStyle(props) {
   const mode = els.colorMode.value;
   if (mode === "cluster") {
     return { color: CLUSTER_COLORS[props.cluster] ?? "#888", fillColor: CLUSTER_COLORS[props.cluster] ?? "#888" };
   }
   const eq = Number(props.equity_score);
-  const c = equityColor(clamp(eq / 100.0, 0, 1));
+  const [emin, emax] = selectedEquityRange();
+  const span = Math.max(1e-9, emax - emin);
+  // Stretch color mapping to the selected range (ex: 40-60) for better separation.
+  const c = equityColor(clamp((eq - emin) / span, 0, 1));
   return { color: c, fillColor: c };
+}
+
+function getEquityHistogram(features, rangeMin, rangeMax, bins = EQUITY_HIST_BINS_MAX) {
+  const counts = Array.from({ length: bins }, () => 0);
+  let total = 0;
+  const span = Math.max(1e-9, rangeMax - rangeMin);
+  for (const feature of features ?? []) {
+    const score = Number(feature?.properties?.equity_score);
+    if (!Number.isFinite(score)) continue;
+    if (score < rangeMin || score > rangeMax) continue;
+    const idx = Math.min(bins - 1, Math.floor(((score - rangeMin) / span) * bins));
+    counts[idx] += 1;
+    total += 1;
+  }
+  return { counts, total };
+}
+
+function renderEquityHistogram() {
+  if (!geo?.features?.length) {
+    return `<div class="legendHint">Distribution loading...</div>`;
+  }
+  const [emin, emax] = selectedEquityRange();
+  const span = Math.max(1e-9, emax - emin);
+  const bins = histogramBinsForSpan(span);
+  const { counts, total } = getEquityHistogram(geo.features, emin, emax, bins);
+  if (!total) {
+    return `<div class="legendHint">No equity scores in ${emin.toFixed(0)}-${emax.toFixed(0)}.</div>`;
+  }
+
+  const maxCount = Math.max(...counts, 1);
+  const bars = counts
+    .map((count, i) => {
+      const lo = emin + i * (span / bins);
+      const hi = emin + (i + 1) * (span / bins);
+      const h = Math.max(4, Math.round((count / maxCount) * 36));
+      return `<div class="histBar" style="height:${h}px" title="${fmtBinEdge(lo, span)}-${fmtBinEdge(hi, span)}: ${count}"></div>`;
+    })
+    .join("");
+  const catRows = counts
+    .map((count, i) => {
+      const lo = emin + i * (span / bins);
+      const hi = emin + (i + 1) * (span / bins);
+      return `<div class="histCat"><span>${fmtBinEdge(lo, span)}-${fmtBinEdge(hi, span)}</span><b>${count.toLocaleString()}</b></div>`;
+    })
+    .join("");
+
+  return `
+    <div class="histWrap">
+      <div class="histHeader">
+        <span>Distribution ${emin.toFixed(0)}-${emax.toFixed(0)}</span>
+        <span>n=${total.toLocaleString()}</span>
+      </div>
+      <div class="histBars">${bars}</div>
+      <div class="histLabels">
+        <span>${fmtBinEdge(emin, span)}</span>
+        <span>${fmtBinEdge((emin + emax) / 2, span)}</span>
+        <span>${fmtBinEdge(emax, span)}</span>
+      </div>
+      <div class="histCats">${catRows}</div>
+    </div>
+  `;
 }
 
 function renderLegend() {
@@ -95,13 +178,13 @@ function renderLegend() {
     `;
     return;
   }
+  const [emin, emax] = selectedEquityRange();
   els.legend.innerHTML = `
     <div class="legendTitle">Legend: Equity score</div>
     <div class="ramp"></div>
-    <div class="rampLabels"><span>0</span><span>50</span><span>100</span></div>
-    <div class="legendRow" style="margin-top:10px">
-      <div style="color:var(--muted)">Red = lower equity</div>
-    </div>
+    <div class="rampLabels"><span>${emin.toFixed(0)}</span><span>${((emin + emax) / 2).toFixed(0)}</span><span>${emax.toFixed(0)}</span></div>
+    ${renderEquityHistogram()}
+    <div class="legendHint">Red = lower (within selected range)</div>
   `;
 }
 
@@ -301,13 +384,17 @@ async function init() {
   summaryRows = summary;
   zRows = z;
 
+  renderLegend();
   renderPca();
   setReportCluster("0");
 
   rebuildLayer();
 }
 
-els.applyFilters.addEventListener("click", () => rebuildLayer());
+els.applyFilters.addEventListener("click", () => {
+  renderLegend();
+  rebuildLayer();
+});
 els.colorMode.addEventListener("change", () => {
   renderLegend();
   rebuildLayer();
