@@ -281,8 +281,9 @@ async function callModel(opts) {
 }
 
 function fullSystemPrompt() {
-  const payload = contextPayload();
-  return `${els.systemPrompt.value.trim()}\n\nContext payload (JSON):\n${JSON.stringify(payload, null, 2)}`;
+  const manualPayload = (els.contextPreview.value || "").trim();
+  const payloadText = manualPayload || JSON.stringify(contextPayload(), null, 2);
+  return `${els.systemPrompt.value.trim()}\n\nContext payload (JSON):\n${payloadText}`;
 }
 
 async function send() {
