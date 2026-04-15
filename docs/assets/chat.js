@@ -54,6 +54,13 @@ Rules:
 3) Cite concrete references when provided in context.
 4) Keep explanations concise and actionable.
 5) When sociology paper excerpts are included in the system message, ground relevant conceptual claims in those passages and cite them (e.g. zahnow1 chunk 3).
+6) Never output bolded quoted phrases (avoid patterns like **"..."**).
+7) Avoid user-facing technical jargon such as "performance", "equity score", "z-score", and "pipeline".
+8) Prefer plain-language paraphrases:
+   - "performance" => "service access and quality in daily life"
+   - "equity score" => "overall fairness level across areas"
+   - "z-score" => "distance from city average"
+9) If a technical term is unavoidable, explain it immediately in one short sentence.
 
 You are an assistant with access to a sociology paper (zahnow1).
 
@@ -231,8 +238,8 @@ function contextPayload() {
   const base = {
     mode,
     modeling_notes: {
-      equity_score: "0-100 normalized score from performance/need ratio pipeline",
-      top3_features: "cluster-level top 3 absolute z-score features vs city average",
+      overall_fairness_level: "0-100 index for how balanced service access and quality are across areas",
+      top3_gap_factors: "top 3 factors with the largest differences from city average in each cluster",
     },
     selected_cluster: els.clusterContext.value,
   };
@@ -382,6 +389,19 @@ async function callModel(opts) {
   return callOpenAI(opts);
 }
 
+function sanitizeAssistantText(text) {
+  return String(text || "")
+    // Remove bold + quoted emphasis like **"term"**
+    .replace(/\*\*"(.*?)"\*\*/g, "$1")
+    // Remove remaining markdown bold marks.
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    // Plain-language replacements for frequent jargon.
+    .replace(/\bequity score\b/gi, "overall fairness level")
+    .replace(/\bperformance\b/gi, "service access and quality")
+    .replace(/\bz-score\b/gi, "distance from city average")
+    .replace(/\bpipeline\b/gi, "calculation process");
+}
+
 function fullSystemPrompt(userQuery) {
   const manualPayload = (els.contextPreview.value || "").trim();
   const payloadText = manualPayload || JSON.stringify(contextPayload(), null, 2);
@@ -412,13 +432,14 @@ async function send() {
 
   try {
     const messages = [{ role: "system", content: fullSystemPrompt(userText) }, ...state.chat];
-    const content = await callModel({
+    const rawContent = await callModel({
       model,
       apiKey,
       messages,
       temperature,
       maxTokens,
     });
+    const content = sanitizeAssistantText(rawContent);
     state.chat.push({ role: "assistant", content });
     state.chat = state.chat.slice(-MAX_HISTORY);
     renderChat();
