@@ -358,6 +358,7 @@
   "artifacts": {
     "grid_results_csv": "grid_results.csv",
     "cluster_summary_csv": "cluster_summary.csv",
-    "cluster_feature_zscores_csv": "cluster_feature_zscores.csv"
+    "cluster_feature_zscores_csv": "cluster_feature_zscores.csv",
+    "rent_inventory_csv": "rent_dataset_module2.csv"
   }
 }
