@@ -50,6 +50,8 @@ let summaryRows = [];
 let zRows = [];
 let zChart = null;
 const EQUITY_HIST_BINS_MAX = 10;
+let globalEquityMin = 0;
+let globalEquityMax = 100;
 
 function clusterName(c) {
   if (!meta?.config?.cluster_names) return `Cluster ${c}`;
@@ -63,8 +65,8 @@ function passesFilters(props) {
 
   const emin = clamp(Number(els.equityMin.value), 0, 100);
   const emax = clamp(Number(els.equityMax.value), 0, 100);
-  const eq = Number(props.equity_score);
-  if (Number.isFinite(eq) && (eq < Math.min(emin, emax) || eq > Math.max(emin, emax))) return false;
+  const pct = rawToPercent(Number(props.equity_score));
+  if (Number.isFinite(pct) && (pct < Math.min(emin, emax) || pct > Math.max(emin, emax))) return false;
 
   return true;
 }
@@ -87,16 +89,21 @@ function fmtBinEdge(v, span) {
   return v.toFixed(0);
 }
 
+function rawToPercent(score) {
+  const span = Math.max(1e-9, globalEquityMax - globalEquityMin);
+  return clamp(((score - globalEquityMin) / span) * 100, 0, 100);
+}
+
 function markerStyle(props) {
   const mode = els.colorMode.value;
   if (mode === "cluster") {
     return { color: CLUSTER_COLORS[props.cluster] ?? "#888", fillColor: CLUSTER_COLORS[props.cluster] ?? "#888" };
   }
   const eq = Number(props.equity_score);
+  const pct = rawToPercent(eq);
   const [emin, emax] = selectedEquityRange();
   const span = Math.max(1e-9, emax - emin);
-  // Stretch color mapping to the selected range (ex: 40-60) for better separation.
-  const c = equityColor(clamp((eq - emin) / span, 0, 1));
+  const c = equityColor(clamp((pct - emin) / span, 0, 1));
   return { color: c, fillColor: c };
 }
 
@@ -105,7 +112,7 @@ function getEquityHistogram(features, rangeMin, rangeMax, bins = EQUITY_HIST_BIN
   let total = 0;
   const span = Math.max(1e-9, rangeMax - rangeMin);
   for (const feature of features ?? []) {
-    const score = Number(feature?.properties?.equity_score);
+    const score = rawToPercent(Number(feature?.properties?.equity_score));
     if (!Number.isFinite(score)) continue;
     if (score < rangeMin || score > rangeMax) continue;
     const idx = Math.min(bins - 1, Math.floor(((score - rangeMin) / span) * bins));
@@ -180,7 +187,7 @@ function renderLegend() {
   }
   const [emin, emax] = selectedEquityRange();
   els.legend.innerHTML = `
-    <div class="legendTitle">Legend: Equity score</div>
+    <div class="legendTitle">Legend: Equity score (%)</div>
     <div class="ramp"></div>
     <div class="rampLabels"><span>${emin.toFixed(0)}</span><span>${((emin + emax) / 2).toFixed(0)}</span><span>${emax.toFixed(0)}</span></div>
     ${renderEquityHistogram()}
@@ -198,7 +205,7 @@ function setSelection(props) {
   els.selection.classList.remove("hidden");
   els.selGridId.textContent = props.grid_id ?? "—";
   els.selCluster.textContent = clusterName(props.cluster);
-  els.selEquity.textContent = Number.isFinite(Number(props.equity_score)) ? Number(props.equity_score).toFixed(1) : "—";
+  els.selEquity.textContent = Number.isFinite(Number(props.equity_score)) ? `${rawToPercent(Number(props.equity_score)).toFixed(1)}%` : "—";
   els.selTop.textContent = props.top3_features ?? "—";
   els.clusterLink.href = `#report`;
 
@@ -355,7 +362,7 @@ function rebuildLayer() {
         `<div style="font-family: ui-sans-serif, system-ui; font-size:12px">
           <div><b>${p.grid_id ?? "grid"}</b></div>
           <div>${clusterName(p.cluster)}</div>
-          <div>Equity: ${Number.isFinite(Number(p.equity_score)) ? Number(p.equity_score).toFixed(1) : "—"}</div>
+          <div>Equity: ${Number.isFinite(Number(p.equity_score)) ? `${rawToPercent(Number(p.equity_score)).toFixed(1)}%` : "—"}</div>
         </div>`,
         { sticky: true }
       );
@@ -383,6 +390,12 @@ async function init() {
   geo = g;
   summaryRows = summary;
   zRows = z;
+
+  const scores = geo.features.map((f) => Number(f.properties?.equity_score)).filter(Number.isFinite);
+  if (scores.length) {
+    globalEquityMin = Math.min(...scores);
+    globalEquityMax = Math.max(...scores);
+  }
 
   renderLegend();
   renderPca();
