@@ -18,17 +18,30 @@ const els = {
   selectionEmpty: document.getElementById("selectionEmpty"),
   selection: document.getElementById("selection"),
   selGridId: document.getElementById("selGridId"),
-  // cluster mode fields
+  // cluster mode side panel
   selClusterSection: document.getElementById("selClusterSection"),
   selCluster: document.getElementById("selCluster"),
   selClusterN: document.getElementById("selClusterN"),
   selClusterEquityMean: document.getElementById("selClusterEquityMean"),
   selClusterTop: document.getElementById("selClusterTop"),
-  // equity mode fields
+  clusterLink: document.getElementById("clusterLink"),
+  // equity mode side panel
   selEquitySection: document.getElementById("selEquitySection"),
   selEquity: document.getElementById("selEquity"),
+  selEquityPct: document.getElementById("selEquityPct"),
   selTop: document.getElementById("selTop"),
   clearSelection: document.getElementById("clearSelection"),
+  // bottom cluster report section
+  reportCluster: document.getElementById("reportCluster"),
+  reportAnchor: document.getElementById("report"),
+  clusterName: document.getElementById("clusterName"),
+  statN: document.getElementById("statN"),
+  statEquityMean: document.getElementById("statEquityMean"),
+  statTop3: document.getElementById("statTop3"),
+  direNeeds: document.getElementById("direNeeds"),
+  priorityQueue: document.getElementById("priorityQueue"),
+  pcaS: document.getElementById("pcaS"),
+  pcaN: document.getElementById("pcaN"),
 };
 
 els.dataPath.textContent = "outputs/grid_points.geojson";
@@ -39,6 +52,7 @@ let layer = null;
 let geo = null;
 let summaryRows = [];
 let zRows = [];
+let zChart = null;
 let selectedProps = null;
 const EQUITY_HIST_BINS_MAX = 10;
 let sortedScores = [];
@@ -51,12 +65,10 @@ function clusterName(c) {
 function passesFilters(props) {
   const cf = els.clusterFilter.value;
   if (cf !== "all" && String(props.cluster) !== cf) return false;
-
   const emin = clamp(Number(els.equityMin.value), 0, 100);
   const emax = clamp(Number(els.equityMax.value), 0, 100);
   const pct = rawToPercent(Number(props.equity_score));
   if (Number.isFinite(pct) && (pct < Math.min(emin, emax) || pct > Math.max(emin, emax))) return false;
-
   return true;
 }
 
@@ -91,14 +103,14 @@ function rawToPercent(score) {
 
 function formatTop3(zRow) {
   if (!zRow) return "—";
-  return Object.entries(zRow)
+  const lines = Object.entries(zRow)
     .filter(([k]) => k !== "cluster")
     .map(([k, v]) => ({ k, z: Number(v) }))
     .filter((d) => Number.isFinite(d.z))
     .sort((a, b) => Math.abs(b.z) - Math.abs(a.z))
     .slice(0, 3)
-    .map((d) => `${INDICATOR_LABELS[d.k] ?? d.k} (${d.z >= 0 ? "+" : ""}${d.z.toFixed(2)})`)
-    .join("<br>");
+    .map((d) => `${INDICATOR_LABELS[d.k] ?? d.k} (${d.z >= 0 ? "+" : ""}${d.z.toFixed(2)})`);
+  return lines.length ? lines.join("<br>") : "—";
 }
 
 function markerStyle(props) {
@@ -130,46 +142,29 @@ function getEquityHistogram(features, rangeMin, rangeMax, bins = EQUITY_HIST_BIN
 }
 
 function renderEquityHistogram() {
-  if (!geo?.features?.length) {
-    return `<div class="legendHint">Distribution loading...</div>`;
-  }
+  if (!geo?.features?.length) return `<div class="legendHint">Distribution loading...</div>`;
   const [emin, emax] = selectedEquityRange();
   const span = Math.max(1e-9, emax - emin);
   const bins = histogramBinsForSpan(span);
   const { counts, total } = getEquityHistogram(geo.features, emin, emax, bins);
-  if (!total) {
-    return `<div class="legendHint">No equity scores in ${emin.toFixed(0)}-${emax.toFixed(0)}.</div>`;
-  }
-
+  if (!total) return `<div class="legendHint">No equity scores in ${emin.toFixed(0)}-${emax.toFixed(0)}.</div>`;
   const maxCount = Math.max(...counts, 1);
-  const bars = counts
-    .map((count, i) => {
-      const lo = emin + i * (span / bins);
-      const hi = emin + (i + 1) * (span / bins);
-      const h = Math.max(4, Math.round((count / maxCount) * 36));
-      return `<div class="histBar" style="height:${h}px" title="${fmtBinEdge(lo, span)}-${fmtBinEdge(hi, span)}: ${count}"></div>`;
-    })
-    .join("");
-  const catRows = counts
-    .map((count, i) => {
-      const lo = emin + i * (span / bins);
-      const hi = emin + (i + 1) * (span / bins);
-      return `<div class="histCat"><span>${fmtBinEdge(lo, span)}-${fmtBinEdge(hi, span)}</span><b>${count.toLocaleString()}</b></div>`;
-    })
-    .join("");
-
+  const bars = counts.map((count, i) => {
+    const lo = emin + i * (span / bins);
+    const hi = emin + (i + 1) * (span / bins);
+    const h = Math.max(4, Math.round((count / maxCount) * 36));
+    return `<div class="histBar" style="height:${h}px" title="${fmtBinEdge(lo, span)}-${fmtBinEdge(hi, span)}: ${count}"></div>`;
+  }).join("");
+  const catRows = counts.map((count, i) => {
+    const lo = emin + i * (span / bins);
+    const hi = emin + (i + 1) * (span / bins);
+    return `<div class="histCat"><span>${fmtBinEdge(lo, span)}-${fmtBinEdge(hi, span)}</span><b>${count.toLocaleString()}</b></div>`;
+  }).join("");
   return `
     <div class="histWrap">
-      <div class="histHeader">
-        <span>Distribution ${emin.toFixed(0)}-${emax.toFixed(0)}</span>
-        <span>n=${total.toLocaleString()}</span>
-      </div>
+      <div class="histHeader"><span>Distribution ${emin.toFixed(0)}-${emax.toFixed(0)}</span><span>n=${total.toLocaleString()}</span></div>
       <div class="histBars">${bars}</div>
-      <div class="histLabels">
-        <span>${fmtBinEdge(emin, span)}</span>
-        <span>${fmtBinEdge((emin + emax) / 2, span)}</span>
-        <span>${fmtBinEdge(emax, span)}</span>
-      </div>
+      <div class="histLabels"><span>${fmtBinEdge(emin, span)}</span><span>${fmtBinEdge((emin + emax) / 2, span)}</span><span>${fmtBinEdge(emax, span)}</span></div>
       <div class="histCats">${catRows}</div>
     </div>
   `;
@@ -180,15 +175,11 @@ function renderLegend() {
   if (mode === "cluster") {
     els.legend.innerHTML = `
       <div class="legendTitle">Legend: Cluster</div>
-      ${[0, 1, 2, 3]
-        .map(
-          (c) => `
+      ${[0, 1, 2, 3].map((c) => `
         <div class="legendRow">
           <div class="swatch" style="background:${CLUSTER_COLORS[c]}"></div>
           <div>${clusterName(c)}</div>
-        </div>`
-        )
-        .join("")}
+        </div>`).join("")}
     `;
     return;
   }
@@ -215,6 +206,7 @@ function setSelection(props) {
   els.selGridId.textContent = props.grid_id ?? "—";
 
   const mode = els.colorMode.value;
+  const zRow = zRows.find((r) => String(r.cluster) === String(props.cluster));
 
   if (mode === "cluster") {
     if (els.selPanelTitle) els.selPanelTitle.textContent = "Cluster Report";
@@ -222,23 +214,22 @@ function setSelection(props) {
     els.selEquitySection.classList.add("hidden");
 
     els.selCluster.textContent = clusterName(props.cluster);
-
     const row = summaryRows.find((r) => String(r.cluster) === String(props.cluster));
     els.selClusterN.textContent = row?.n_grids_scored?.toLocaleString?.() ?? "—";
     els.selClusterEquityMean.textContent = row ? fmt(row.equity_mean, 2) : "—";
-
-    const zRow = zRows.find((r) => String(r.cluster) === String(props.cluster));
     els.selClusterTop.innerHTML = formatTop3(zRow);
+
+    if (els.clusterLink) els.clusterLink.href = "#report";
+    setReportCluster(props.cluster);
+    setTimeout(() => els.reportAnchor?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
   } else {
     if (els.selPanelTitle) els.selPanelTitle.textContent = "Equity Score Report";
     els.selClusterSection.classList.add("hidden");
     els.selEquitySection.classList.remove("hidden");
 
-    els.selEquity.textContent = Number.isFinite(Number(props.equity_score))
-      ? Number(props.equity_score).toFixed(2)
-      : "—";
-
-    const zRow = zRows.find((r) => String(r.cluster) === String(props.cluster));
+    const raw = Number(props.equity_score);
+    els.selEquity.textContent = Number.isFinite(raw) ? raw.toFixed(2) : "—";
+    els.selEquityPct.textContent = Number.isFinite(raw) ? `${rawToPercent(raw)}%` : "—";
     els.selTop.innerHTML = formatTop3(zRow);
   }
 }
@@ -252,38 +243,100 @@ async function fetchJson(url) {
 function parseCsv(url) {
   return new Promise((resolve, reject) => {
     Papa.parse(url, {
-      download: true,
-      header: true,
-      dynamicTyping: true,
-      skipEmptyLines: true,
+      download: true, header: true, dynamicTyping: true, skipEmptyLines: true,
       complete: (res) => resolve(res.data),
       error: (err) => reject(err),
     });
   });
 }
 
+function renderPca() {
+  const p = meta?.pca_weights?.service_performance ?? {};
+  const n = meta?.pca_weights?.service_need ?? {};
+  if (els.pcaS) els.pcaS.textContent = JSON.stringify(p, null, 2);
+  if (els.pcaN) els.pcaN.textContent = JSON.stringify(n, null, 2);
+}
+
+function renderSummary(c) {
+  const row = summaryRows.find((r) => String(r.cluster) === String(c));
+  if (els.clusterName) els.clusterName.textContent = clusterName(c);
+  if (!row) return;
+  if (els.statN) els.statN.textContent = row.n_grids_scored?.toLocaleString?.() ?? String(row.n_grids_scored ?? "—");
+  if (els.statEquityMean) els.statEquityMean.textContent = fmt(row.equity_mean, 2);
+  const zRow = zRows.find((r) => String(r.cluster) === String(c));
+  if (els.statTop3) els.statTop3.innerHTML = formatTop3(zRow);
+}
+
+function renderZChart(c) {
+  const row = zRows.find((r) => String(r.cluster) === String(c));
+  if (!row) return;
+  const items = Object.keys(row)
+    .filter((k) => k !== "cluster" && row[k] !== null && row[k] !== undefined && !Number.isNaN(row[k]))
+    .map((k) => ({ k, z: Number(row[k]) }))
+    .sort((a, b) => Math.abs(b.z) - Math.abs(a.z))
+    .slice(0, 6)
+    .reverse();
+  const labels = items.map((d) => INDICATOR_LABELS[d.k] ?? d.k);
+  const data = items.map((d) => d.z);
+  const colors = items.map((d) => (d.z >= 0 ? "rgba(34,197,94,.65)" : "rgba(239,68,68,.65)"));
+  const borders = items.map((d) => (d.z >= 0 ? "rgba(34,197,94,1)" : "rgba(239,68,68,1)"));
+  const ctx = document.getElementById("zChart");
+  if (!ctx) return;
+  if (zChart) zChart.destroy();
+  zChart = new Chart(ctx, {
+    type: "bar",
+    data: { labels, datasets: [{ label: "z-score", data, backgroundColor: colors, borderColor: borders, borderWidth: 1 }] },
+    options: {
+      indexAxis: "y", responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: "rgba(255,255,255,.06)" }, ticks: { color: "rgba(232,234,240,.75)" } },
+        y: { grid: { display: false }, ticks: { color: "rgba(232,234,240,.85)" } },
+      },
+    },
+  });
+}
+
+function renderHeuristics(c) {
+  const h = meta?.heuristics?.[String(c)] ?? meta?.heuristics?.[c];
+  if (!h) {
+    if (els.direNeeds) els.direNeeds.textContent = "—";
+    if (els.priorityQueue) els.priorityQueue.textContent = "—";
+    return;
+  }
+  const priClass = (p) => (p || "").toLowerCase();
+  if (els.direNeeds) els.direNeeds.innerHTML = (h.needs ?? []).map((n) => {
+    const actions = (n.actions ?? []).map((a) => `<li>${a}</li>`).join("");
+    return `<div class="needCard"><div class="pill ${priClass(n.priority)}">${n.priority} · #${n.rank}</div><div class="needTitle">${n.title}</div><div class="needDesc">${n.desc}</div><ul class="smallNote" style="margin:0;padding-left:18px">${actions}</ul></div>`;
+  }).join("");
+  if (els.priorityQueue) els.priorityQueue.innerHTML = (h.queue ?? []).map(([num, action, why]) =>
+    `<div class="queueItem"><div class="queueNum">${num}</div><div><div class="queueAction">${action}</div><div class="queueWhy">→ ${why}</div></div></div>`
+  ).join("");
+}
+
+function setReportCluster(c) {
+  const v = String(c);
+  if (els.reportCluster) els.reportCluster.value = v;
+  renderSummary(v);
+  renderZChart(v);
+  renderHeuristics(v);
+}
+
 function rebuildLayer() {
   if (!map || !geo) return;
   if (layer) layer.remove();
-
   layer = L.geoJSON(geo, {
     filter: (feature) => passesFilters(feature.properties ?? {}),
     pointToLayer: (feature, latlng) => {
       const props = feature.properties ?? {};
       const style = markerStyle(props);
-      return L.circleMarker(latlng, {
-        radius: 5,
-        weight: 1,
-        opacity: 0.9,
-        fillOpacity: 0.85,
-        ...style,
-      });
+      return L.circleMarker(latlng, { radius: 5, weight: 1, opacity: 0.9, fillOpacity: 0.85, ...style });
     },
     onEachFeature: (feature, l) => {
       const p = feature.properties ?? {};
       l.on("click", () => setSelection(p));
       l.bindTooltip(
-        `<div style="font-family: ui-sans-serif, system-ui; font-size:12px">
+        `<div style="font-family:ui-sans-serif,system-ui;font-size:12px">
           <div><b>${p.grid_id ?? "grid"}</b></div>
           <div>${clusterName(p.cluster)}</div>
           <div>Equity: ${Number.isFinite(Number(p.equity_score)) ? `${rawToPercent(Number(p.equity_score))}%` : "—"}</div>
@@ -297,43 +350,26 @@ function rebuildLayer() {
 async function init() {
   renderLegend();
   clearSelection();
-
   map = L.map("map", { zoomControl: true }).setView([37.77, -122.44], 12);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
-
   const [m, g, summary, z] = await Promise.all([
-    fetchJson(DATA_META),
-    fetchJson(DATA_GEOJSON),
-    parseCsv(DATA_SUMMARY),
-    parseCsv(DATA_Z),
+    fetchJson(DATA_META), fetchJson(DATA_GEOJSON), parseCsv(DATA_SUMMARY), parseCsv(DATA_Z),
   ]);
-  meta = m;
-  geo = g;
-  summaryRows = summary;
-  zRows = z;
-
-  sortedScores = geo.features
-    .map((f) => Number(f.properties?.equity_score))
-    .filter(Number.isFinite)
-    .sort((a, b) => a - b);
-
+  meta = m; geo = g; summaryRows = summary; zRows = z;
+  sortedScores = geo.features.map((f) => Number(f.properties?.equity_score)).filter(Number.isFinite).sort((a, b) => a - b);
   renderLegend();
+  renderPca();
+  setReportCluster("0");
   rebuildLayer();
 }
 
-els.applyFilters.addEventListener("click", () => {
-  renderLegend();
-  rebuildLayer();
-});
-els.colorMode.addEventListener("change", () => {
-  renderLegend();
-  rebuildLayer();
-  if (selectedProps) setSelection(selectedProps);
-});
+els.applyFilters.addEventListener("click", () => { renderLegend(); rebuildLayer(); });
+els.colorMode.addEventListener("change", () => { renderLegend(); rebuildLayer(); if (selectedProps) setSelection(selectedProps); });
 els.clearSelection.addEventListener("click", () => clearSelection());
+els.reportCluster?.addEventListener("change", (e) => setReportCluster(e.target.value));
 
 init().catch((err) => {
   console.error(err);
