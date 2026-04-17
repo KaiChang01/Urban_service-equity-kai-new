@@ -1,0 +1,3 @@
+# Generated pipeline outputs go here (gitignored except this file).
+# Run: python run_pipeline.py --output-dir docs/outputs --write-geojson
+# See repository README.

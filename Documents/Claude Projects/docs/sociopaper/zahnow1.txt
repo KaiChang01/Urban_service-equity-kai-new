@@ -1,0 +1,1037 @@
+Introduction
+Individual places that facilitate social convi-
+viality are fundamental features of local
+neighbourhoods. Neighbourhood places
+provide material needs for residents and visi-
+tors. The less tangible benefits of individual
+places like parks, shops and cafes arise from
+their ability to collectively enhance opportu-
+nities for social interaction in a given neigh-
+bourhood (Baum and Palmer, 2002; Patch,
+2008; Zukin et al., 2009). Both the presence
+and spatial arrangement of places in the
+neighbourhood influence how opportunities
+for social interaction emerge via their capa-
+city to funnel population movement and con-
+trol flows of people (Small and Adler, 2019).
+Passive sociability can arise as a function of
+routine daily activities when individuals
+encounter one another as they move through
+and use neighbourhood places. Particular
+types of places within the neighbourhood
+facilitate lingering and active social engage-
+ment by design (Hillier and Hanson, 1984;
+Mehta and Bosson, 2009). For example,
+parks and street-front shops, commonly
+patronised by local residents, can facilitate
+repeated social interactions between neigh-
+bours over time (Small and Adler, 2019;
+Zukin et al., 2009). Alternatively, places like
+industrial buildings, cemeteries and hospitals
+can create social holes, and features such as
+rail lines and highways can physically frag-
+ment neighbourhoods, by restricting mobility
+and hindering opportunities for people to
+come together (Hipp et al., 2014; Wickes
+et al., 2018). By influencing the potential for
+social interaction, neighbourhood places can
+indirectly affect neighbourhood cohesion and
+capacity for informal social control, with
+implications for collecive efficacy and crime
+(Sampson et al., 1997).
+Collective efficacy develops when social cohesion is coupled with informal social control (Sampson et al., 1997). It relies on a
+sense of familiarity among individuals and
+the perception of shared values and norms
+(Sampson, 2012). Neighbourhood places
+that facilitate social interaction provide
+opportunities to build cohesive relationships
+of trust, shared values and cooperation for
+crime prevention (Kurtz et al., 1998;
+Peterson et al., 2000). Herein, we refer to
+such places as social conduits (Wickes et al.,
+2018). Social conduits are places beyond
+work and home that support both active
+and passive human interaction (e.g. meeting
+and talking with others; watching people
+doing activities) (Wickes et al., 2018).
+Neighbourhoods with a greater number of
+social conduits present more opportunities
+for social interaction, which may enhance
+collective efficacy (Wickes et al., 2018). Yet
+when social conduits are removed from the
+neighbourhood or the spatial arrangement
+of social conduits changes over time, this
+may shift patterns of sociability, potentially
+disrupting a sense of familiarity and the
+shared values and norms that underpin col-
+lective efficacy. In this case, residents lose
+inclination to intervene when problems
+occur because the individuals involved are
+unfamiliar or they are unsure how other
+members of the community will react to
+their intervention (Sampson, 2013). This sit-
+uation can lead to increases in crime oppor-
+tunities (Sampson, 2006, 2012).
+Crime opportunities emerge when moti-
+vated offenders and suitable targets converge
+at places where capable guardians are absent
+or less inclined to intervene (Cohen and
+Felson, 1979). Places visited by motivated
+offenders to covertly engage in illegal activi-
+ties are crime attractors (e.g. vacant lots and
+industrial sites). Places where crime opportu-
+nities emerge, as potential offenders and tar-
+gets undertake legitimate activities, are
+referred to as crime generators (Brantingham
+and Brantingham, 1995). Under certain
+social, demographic and economic condi-
+tions, crime generators may be considered
+social conduits given that both types of
+places facilitate social interactions. While
+social conduits facilitate prosocial interac-
+tions, crime generators facilitate deviance
+(Brantingham and Brantingham, 1995;
+Wickes et al., 2018). When collective efficacy
+is high and individuals undertaking legiti-
+mate activities engage in surveillance, oppor-
+tunities for crime are low (Cohen and
+Felson, 1979; Jacobs, 1961). However,
+changes in neighbourhood places that alter
+patterns of regular social interaction and the
+capacity of the neighbourhood to develop
+and maintain collective efficacy may increase
+crime vulnerability. As such, social conduits
+may act as crime generators until patterns of
+regular social interaction develop once more.
+To date, scholarship on neighbourhood
+change has focused primarily on the associa-
+tion between changes in population compo-
+sition and crime (see Kirk and Laub, 2010,
+for an in-depth review of the neighbourhood
+change and crime literature). Studies also
+consider specific processes of neighbourhood
+growth, decline and instability such as gen-
+trification (Balzarini and Shlay, 2018;
+Papachristos et al., 2011), mass foreclosures
+(Ellen et al., 2013) and natural disasters
+(Curtis et al., 2013; Zahnow et al., 2017).
+Yet, for the most part, this research is lim-
+ited to demographic and economic indica-
+tors of neighbourhood status, or focuses on
+the addition or removal of one particular
+type of facility. Examples include case stud-
+ies on increases in coffee shops (Papachristos
+et al., 2011), on the temporary closure of a
+train station (Phillips and Sandler, 2015) and
+on stadia during periods of closure (non-
+game days) (Kurland, 2019). This research
+provides insight into how the changing pres-
+ence of places can socially impact commu-
+nities, but the generalisability of the findings
+to other neighbourhoods is limited. Further, the studies do not capture the real-life incre-
+mental shifts that occur within neighbour-
+hoods as a collective context over time.
+In this study, we classify neighbourhood
+places based on expected patterns of legiti-
+mate use and their capacity to facilitate
+social interaction. We add to the current
+scholarship by examining the association
+between changes in the presence and spatial
+arrangement of neighbourhood places and
+(a) collective efficacy, and (b) crime.
+Drawing on crime opportunity theories and
+theories of neighbourhood social control, we
+hypothesise that changes to neighbourhood
+places will leave communities vulnerable to
+crime until new patterns of natural surveil-
+lance emerge and collective efficacy
+develops.
+Background
+Places are inherently social. Without people,
+places are denuded of meaning and are
+merely space. In contrast to the fluidity of
+social life, places are ‘bricks and mortar’ and
+provide relative stability (Felder and
+Pignolo, 2018). Places scaffold people’s daily
+routines and provide the framework for
+social interaction to occur. Places like shops,
+cafes, schools and restaurants can enhance
+neighbourhoods by facilitating social inter-
+actions ranging from ephemeral encounters
+to scheduled meetings (Baum and Palmer,
+2002; Small and Adler, 2019; Wickes et al.,
+2018). Social cohesion and shared beha-
+vioural norms develop over time, through
+interactions that occur at these socially con-
+ducive places (Felder and Pignolo, 2018;
+Massey, 1994; Oldenburg, 1989).
+Collectively, we refer to places that facilitate
+neighbourhood sociability as social conduits
+(Corcoran et al., 2018; Wickes et al., 2018).
+Social conduits are conceptually similar
+to Oldenburg’s (1989) ‘third places’ in that
+in addition to their primary function, they
+can facilitate the convergence of individuals
+required for social interaction (Anderson,
+2011; Oldenburg, 1989; Wickes et al., 2018).
+Social conduits vary greatly in features, form
+and function and thus support different
+types of social interactions (Wickes et al.,
+2018). While some social conduits provide
+essential amenities for local residents and
+enhance capacity for neighbour-based
+encounters, others attract individuals from
+broader catchment areas and increase the
+presence of visitors in the local area (Wickes
+et al., 2018). Similarly, while certain places
+facilitate specific scheduled activities, others
+are multi-functional where patterns of visita-
+tion are temporally and typologically dispa-
+rate. Thus, different types of social conduits
+can support interactions ranging from the
+incidental to the organised and regular.
+Variation in the type of interactions sup-
+ported at particular places can have a flow-
+on effect for the development of social cohe-
+sion and collective efficacy (Baum and
+Palmer, 2002; Sampson et al., 1997).
+We categorise social conduits into four
+broad groups based on their social interac-
+tion potential. Anchoring conduits facilitate
+repeated interactions between the same
+group of individuals (e.g. schools, churches),
+while local exposure conduits encourage
+unscheduled, less frequent interactions
+between local residents (e.g. local parks, cor-
+ner shops). Scheduled conduits facilitate
+scheduled activities with locals and visitors
+(e.g. restaurants, cinemas, train stations),
+and extra-local conduits are those that
+attract both locals and visitors at all times
+(e.g. shopping malls).1 While each type of
+conduit is expected to have a distinct influ-
+ence on social interaction at the micro level,
+the combination and arrangement of social
+conduits influence the social interaction
+potential at the neighbourhood level. Thus,
+the presence of social conduits indirectly
+impacts social ties (Duncier, 1992; Furman,
+1997; Oldenburg, 1989), collective efficacy
+and crime (Hipp et al., 2014; Klinenberg,
+2002) by providing physical opportunities
+for individuals to come together to form
+pro-social bonds and develop shared norms
+of behaviour.
+Previous studies have elucidated the
+social benefits of particular neighbourhood
+features (Baum and Palmer, 2002; Mehta
+and Bosson, 2009; Whyte, 1980). In a study
+of social cohesion in Dutch neighbourhoods,
+van Bergeijk et al. (2008) found that resi-
+dents who shopped daily in the local area,
+visited cafes and restaurants at least once a
+month and/or visited community centres
+had larger social networks and expressed a
+greater sense of social belonging than those
+who did not use local facilities. Similarly,
+Cabrera and Najarian (2015) found that
+more frequent use of local shops and busi-
+nesses (foci such as the yoga studio, fitness
+centre, cafe) resulted in residents having
+more bridging social ties (see also Vo ¨ lker
+et al., 2007). Many of these studies focus on
+the individual, proposing that as people go
+about their daily activities at local places,
+they inadvertently participate in neighbour-
+hood social life and contribute to the actual
+and perceived social cohesion (Granovetter,
+1983). Interaction with others can also lead
+to the development of collective values and
+behavioural norms that can be activated
+when community problems such as crime
+and disorder arise, which is referred to as
+collective efficacy (Granovetter, 1983;
+Kleinhans and Bolt, 2014). The benefits of
+neighbourhood social cohesion and its
+extension, collective efficacy, for individuals
+and at the neighbourhood level are widely
+reported. Living in a collectively efficacious
+neighbourhood is associated with better
+health and wellbeing (Browning and
+Cagney, 2002; Kawachi and Berkman,
+2001), while collective efficacy at the neigh-
+bourhood level predicts better childhood
+outcomes, better disaster recovery (Kawachi
+and Berkman, 2001; Paton, 2010) and,
+importantly, reduced crime (Morenoff et al.,
+2001; Sampson et al., 1997). Even at the
+level of the individual street segment, higher
+collective efficacy is associated with lower
+crime (Weisburd et al., 2020).
+While social conduits provide opportuni-
+ties to develop and maintain collective effi-
+cacy, other features threaten social cohesion
+by physically fragmenting neighbourhoods.
+Physical fragmentation describes a physical-
+spatial phenomenon whereby highways and
+rail lines create interstitial places that disrupt
+the urban fabric. By acting as a physical bar-
+rier to mobility and interaction, extensive
+infrastructure can undermine the develop-
+ment of social cohesion across the neigh-
+bourhood as a whole and instead limit social
+interactions to those sharing a common
+‘fragment’ of the neighbourhood (Hipp
+et al., 2014). However, Grannis (1998)
+notes that smaller streets within neighbour-
+hood fragments play a primary role in foster-
+ing social relations – albeit in a racially and
+spatially segregated pattern. Similarly,
+Appleyard and Lintell (1972) found people
+perceive ‘heavy streets’ to be associated with
+strangers and to serve only as a corridor
+between the local neighbourhood and exter-
+nal areas. On the contrary, smaller residen-
+tial streets were perceived as the basis of
+‘lively, close-knit communities’ (Appleyard
+and Lintell, 1972: 93). Hence, while it is evi-
+dent that highways and rail lines physically
+fragment neighbourhoods, it remains unclear
+whether fragmentation has a positive or neg-
+ative impact on social cohesion across the
+neighbourhood as a whole.
+Social conduits, collective efficacy and
+crime longitudinally
+Considering that social conduits enable
+social interactions (Simmel, 1997 [1903];
+Small and Adler, 2019) and facilitate the
+development of social cohesion (van
+Bergeijk et al., 2008), it is reasonable to
+hypothesise that additions, removals or
+changes in the arrangement of social con-
+duits over time may destabilise social cohe-
+sion and collective efficacy, with
+implications for crime (Zukin et al., 2009).
+For the most part, physical neighbourhood
+change is slow and almost imperceptible at
+the aggregate level. A local shop may close
+down and be replaced by a new restaurant,
+or a new fitness centre may appear in a pre-
+viously undeveloped space. In isolation,
+these changes may have little impact on the
+social interaction potential at the neighbour-
+hood level. However, we assert that the
+combinatorial influence of these changes
+and reconfigurations may significantly alter
+the potential for sociability and norm
+development.
+Since the turn of the century, urban scho-
+lars have problematised neighbourhood
+change. Processes of urbanisation and
+gentrification have been scrutinised and
+lamented for displacing vulnerable residents
+(Barton and Gruner, 2016; Freeman et al.,
+2015), segregating cities (Freeman, 2009)
+and depersonalising social interactions
+(Simmel, 1997 [1903]; Wirth, 1938). Theories
+of neighbourhood change, including inva-
+sion/succession (Park et al., 1925) and neigh-
+bourhood life-cycle models (Hoover and
+Vernon, 1959), acknowledge the inevitability
+of neighbourhood change but retain a nega-
+tive framing of neighbourhood decline and
+population turnover. Despite a longstanding
+interest in the idea of neighbourhood change
+and its implications for social interactions
+and crime, empirical scholarship is largely
+limited to studies assessing changes in the
+socio-demographic composition of neigh-
+bourhoods over time (Galster et al., 2007;
+Kirk and Laub, 2010). Commonly, the
+mechanisms proposed to explain the associa-
+tion between population changes and crime
+align with those described here, suggesting
+that neighbourhood change destabilises reg-
+ular patterns of interaction. When this
+occurs, social cohesion and collective
+efficacy are reduced, which lowers the risk
+to offenders and increases the likelihood of
+crime. Prior work provides partial support
+for this argument. In a study of Chicago
+neighbourhoods, Becker (2016, 2019) finds
+that neighbourhood change disrupts collec-
+tive efficacy, which contributes to higher
+violence.
+Other processes of neighbourhood
+growth, decline and (in)stability, such as
+gentrification, have received greater atten-
+tion in recent years. While gentrification is
+concerned with neighbourhood renewal, the
+majority of studies focus on changes in
+neighbourhood status using census indica-
+tors such as housing value, field of employ-
+ment or average income (Ohmer et al., 2018;
+Teernstra and van Gent, 2012) and do not
+assess the changes in the presence or
+arrangement of neighbourhood places. Two
+exceptions include a study examining the
+impact of increased coffee shops on crime
+over time in Chicago neighbourhoods
+(Papachristos et al., 2011), and a study
+exploring the influence of changes to the
+retail landscape in two New York City
+neighbourhoods on social interactions
+(Zukin et al., 2009). These studies demon-
+strate that the addition of social conduits
+can facilitate lower crime (Papachristos
+et al., 2011), provide opportunities for social
+interaction (Zukin et al., 2009) and serve as
+a symbol of neighbourhood improvement
+(Macintyre et al., 2008). However, the
+removal of long-term businesses or shops
+may dislocate social bonds and interrupt
+informal street activity associated with sur-
+veillance (Macintyre et al., 2008; Zukin
+et al., 2009). Evidence suggests that neigh-
+bourhood change, either positive or nega-
+tive, tends to be socially disorganising at
+least in the short term (Kreager et al., 2011;
+Papachristos et al., 2011).
+The proposition that changes in the pres-
+ence and arrangement of social conduits will
+be socially disorganising at the neighbourhood level is supported by crime
+opportunity theories and theories of neigh-
+bourhood social control. From a crime
+opportunities perspective, locales charac-
+terised by low levels of informal guardian-
+ship (Reynald, 2018) or those that do not
+support natural surveillance by individuals
+undertaking legitimate and routine activities,
+provide more attractive crime opportunities
+to offenders (Clarke, 1995; Wilcox et al.,
+2007). Some types of places, referred to as
+crime generators, are more susceptible to
+crime because their primary function results
+in the convergence of crowds, made up of
+individuals who may be locals or visitors
+(Brantingham and Brantingham, 1995).
+While the label of crime generator incites
+negative connotations, they are areas where
+many people come together with legitimate
+intentions, yet crowd density can create tem-
+porary gaps in surveillance and reduced
+capacity for intervention, producing oppor-
+tunities for crime (Reynald, 2018).
+Drawing on the tenets of social disorgani-
+sation and collective efficacy theories, crimi-
+nal behaviour is more likely to be monitored
+and individuals are more likely to intervene
+when social disorganisation is low and social
+cohesion and mutual trust among residents
+are high (Sampson, 2012; Sampson et al.,
+1997; Shaw and McKay, 1942). Social cohe-
+sion and mutual trust are developed through
+repeated encounters at places over time
+(Granovetter, 1983; Hipp, 2016; Sampson
+et al., 1997). Associational social ties formed
+through repeated interactions provide
+opportunities for the transmission of beha-
+vioural norms and the development of a col-
+lective sense of familiarity that supports
+willingness to intervene on behalf of the
+common good (Gau, 2014; Granovetter,
+1983; Kasarda and Janowitz, 1974;
+Sampson, 2006). Subsequently, neighbour-
+hoods undergoing change may be left vul-
+nerable to crime while new patterns of social
+interaction and natural surveillance emerge
+and collective efficacy develops. Even in
+places where collective efficacy is initially
+high, this may be destabilised by changes to
+the neighbourhood physical environment
+that alter the patterns of regular social inter-
+actions that form the basis of collective effi-
+cacy (Hipp, 2016).
+The current study
+Previous studies have suggested that (a)
+neighbourhood places provide settings for
+pro-social and/or deviant interaction to
+occur, and (b) neighbourhood change, when
+measured demographically, can be disorga-
+nising, at least in the short term. Our study
+brings together crime opportunities and
+neighbourhood social control theories to
+examine the effect of changes in the presence
+of neighbourhood places on collective effi-
+cacy and crime. This research extends the
+scholarship in three key ways. First, we
+employ a longitudinal framework to capture
+the relationship between changes in socially
+conducive places and crime. Second, while
+previous studies have been limited to exam-
+ining the impact on crime of one type of
+facility, such as bars (Jay, 2020; Roncek and
+Maier, 1991; Wheeler, 2018) or parks
+(Boessen and Hipp, 2018; McCord and
+Houser, 2017), we simultaneously consider
+multiple types of neighbourhood amenities.
+This approach limits the potential for mea-
+surement bias arising from the effect of
+unmeasured neighbourhood features. Third,
+our data encapsulate 147 neighbourhoods
+that have experienced varying patterns of
+growth, decline and stability over the period
+of investigation. This is in comparison with
+studies on neighbourhood physical change
+that focus on single case study neighbour-
+hoods (e.g. Zukin, 2009).
+Data and methods
+This study utilises three waves of the
+Australian Community Capacity Study
+(ACCS) conducted in 2008, 2010 and 2012
+respectively. The ACCS is a longitudinal
+survey of randomly selected residents from
+148 Australian neighbourhoods (Wave 2
+n = 4088; Wave 3 n = 4167; Wave 4
+n = 4132).2 Survey participants respond to a
+range of questions about their local commu-
+nity, which they are informed refers to their
+residential suburb. This is the unit of analysis
+for this study and we refer to it throughout as
+the neighbourhood. Neighbourhood popula-
+tions in our sample range from 258 to 22,800,
+while numbers of participants drawn from
+each neighbourhood range from 11 to 47
+(mean = 30)3 (see https://accs.pro ject.uq.e
+du.au/).
+Dependent variables. Collective efficacy: We
+computed a scale comprising seven items
+from the ACCS to capture respondents’ per-
+ceptions of collective efficacy. The scale
+comprises items that are identical to those
+used in the Project on Human Development
+in Chicago Neighborhoods in the original
+study of collective efficacy (Sampson et al.,
+1997). The dependent variable for Model 1
+is the latent neighbourhood-level scale score.
+Crime: Crime data for this study consist of
+counts of property theft and public nuisance
+offences recorded by the Queensland Police
+Service from 2008 to 2012. We focus on theft
+and nuisance as these are crimes of opportu-
+nity that take place when informal social
+control is absent or weak. Further, as we are
+examining the impact of changes in the pres-
+ence of social conduit types across a variety
+of neighbourhood contexts, we wanted to
+ensure that the examined crime types were
+possible regardless of primary land use. For
+example, it is not possible for burglary to
+occur at the park. Our selection of crime
+types was also based on data availability;
+both theft and nuisance occur with adequate
+frequency across our sample of neighbour-
+hoods during each period to model crime
+across all three time points.
+Neighbourhood social conduits. We use the
+Digital Cadastral Database (DCDB) and the
+Queensland Valuation and Sales (QVAS)
+land use data to categorise land parcels into
+four types, based on their capacity to gener-
+ate interaction and opportunities for social
+control (Corcoran et al., 2018; Wickes et al.,
+2018). The variable for each category is the
+total number of places log transformed to
+address the potential for outliers.
+Type 1 – Anchoring conduits encourage
+repeated interactions between the same indi-
+viduals. This type includes schools, public
+libraries, childcare centres, gyms/health
+clubs and churches/religious facilities.
+Type 2 – Local exposure conduits are places
+that support encounters with other frequent
+users at sporadic and unscheduled points in
+time. These facilities are not the sites of
+scheduled activities; rather, they are sites
+with localised catchments that may encour-
+age acquaintanceship ties between regular
+users. This type includes neighbourhood
+parks and single or row street-front shops.
+Type 3 – Scheduled conduits facilitate sched-
+uled activities with a variety of local and
+extra-local users. These facilities can be busy
+places at particular times and are associated
+with particular functions including local res-
+taurants, cinemas, theatres and train stations.
+Type 4 – Extra-local exposure conduits are
+places that attract a variety of local and
+extra-local users. These features have large
+catchment areas and facilitate incidental
+encounters between diverse groups of people,
+such as large malls or shopping complexes.
+In addition to social conduits, we include
+two other land use classifications that may
+be important for barriers for neighbourhood
+social interaction potential:
+Social holes are places that are not openly
+accessible to the public or are open to the
+public but do not encourage social interaction. The features included in this
+type are cemeteries, defence force bases,
+industrial buildings and large hospitals.
+Undeveloped parcels includes vacant house
+blocks, bushland or state controlled national
+parks but excludes neighbourhood parks
+belonging to the local exposure conduit type.
+These are empty spaces that do not contain
+any amenities that would encourage social
+interaction.
+Physical fragmentation: In addition to the
+presence of places that facilitate social inter-
+action, the physical arrangement of neigh-
+bourhood land use types may also influence
+the likelihood of social encounters. This
+physical arrangement is captured as an index
+revealing the degree to which residential and
+social spaces within the neighbourhood are
+fragmented by highways, rail lines and
+waterways. The fragmentation index mea-
+sures the probability that two randomly
+selected points in the neighbourhood will be
+located in a single fragment, thus a greater
+number of fragments reduces this probabil-
+ity. Lower values indicate fewer neighbour-
+hood fragments while higher values indicate
+more neighbourhood fragments.
+Neighbourhood social and demographic
+characteristics. Neighbourhood social-demo-
+graphic characteristics were drawn from the
+Australian Bureau of Statistics’ census of
+population and housing for the time points
+2006 (Wave 2) and 2011 (Wave 4). Standard
+linear interpolation was performed with
+three time points (2001, 2006 and 2011) to
+provide data for Wave 3. Variable selection
+was informed by the theoretical and empirical
+scholarship, highlighting key determinants of
+social disorganisation and neighbourhood
+crime; economic disadvantage; ethnic diversity;
+residential mobility; and population density
+(Sampson et al., 1997; Shaw and McKay,
+1942). Economic disadvantage is the percentage
+of neighbourhood households that earn less
+than AU$799 per week. Residential mobility is
+the percentage of households reporting a dif-
+ferent address five years prior. To account for
+ethnic diversity, we include a measure of lan-
+guage diversity using a Blau index of the nine
+main language categories reported in the
+Australian census (Blau, 1977). We also
+include a measure of population density.
+Summary statistics for all variables are pre-
+sented in Table 1.
+Analytic approach. We adopt a mixed effects
+modelling approach to examine the associa-
+tion between change in neighbourhood social
+conduits, collective efficacy and crime over
+time. Mixed effects panel models are appro-
+priate as they provide capacity to allow the
+intercept and slope to vary across neighbour-
+hoods in the sample, allowing the models to
+capture both between-neighbourhood and
+within-neighbourhood effects (Allison and
+Waterman, 2002). The model estimates are
+for panel models for i = 1.., N where N is
+the number of neighbourhoods (147) and
+t = 1,.T where T = 3 corresponding to
+the three ACCS survey waves. We employ a
+linear regression panel estimator to model col-
+lective efficacy, given that this variable reflects
+a normal distribution (see Appendix 1). The
+basic form of the model is as follows:
+yit = a + bXit + vit + eit
+where yit is collective efficacy for neighbour-
+hood i at time t. vit is the neighbourhood
+specific error term and eit is the ‘usual’ error
+term (StataCorp, 2015). We used a random-
+effects estimator which produces a matrix-
+weighted average of between and within
+results (Allison, 2009). We use negative
+binomial regression – a form of Poisson
+regression that accounts for overdispersion
+in the dependent variable – for estimating
+counts of theft and nuisance offences. We
+include total neighbourhood population as
+the exposure term that constrains the associ-
+ated coefficient to one (Hausman et al.,
+1984; StataCorp, 2015).
+The coefficients (Model 1) and incidence
+rate ratios (IRR) (Models 2 and 3) include
+both the within-neighbourhood and
+between-neighbourhood effects. In the case
+of our models, coefficients and IRRs repre-
+sent the average effect of the independent
+variable over collective efficacy and crime
+when the independent variable changes
+across time and between neighbourhoods by
+one unit. Tests for multicollinearity revealed
+all variance inflation factors (VIFs) were
+below two and correlations were not proble-
+matic.4 All analyses were conducted in Stata
+14.0 (StataCorp, 2015).
+Preliminary analysis: Visual depiction of
+change in the study site (Brisbane)
+Brisbane, our case study context (Figure 1a),
+is one of the fastest growing cities in
+Australia, with the census noting a 9.9%
+increase in population between 2011 and
+2016. This population growth, and related
+residential and commercial development,
+has been unevenly distributed across the
+city. Figure 1a displays the spatial distribu-
+tion of Brisbane’s population growth, high-
+lighting that while many pockets of Brisbane
+experienced rapid population growth from
+2011 to 2016, some neighbourhoods (73 in
+total) actually experienced a decline in popu-
+lation. Consummate with population
+changes, places within neighbourhoods also
+changed over the study period. Figure 1b
+reveals the spatial distribution of neighbour-
+hoods where social conduits, social holes
+and physical fragmentation increased,
+decreased or remained stable over the five-
+year observation period. While illustrating
+that all neighbourhoods within Brisbane experienced some type of physical change,
+this change was not consistent either within
+or between neighbourhoods, nor across the
+types of neighbourhood places. Rather,
+Brisbane neighbourhoods were subject to
+unique combinations of gains and losses in
+social conduits, social holes and changes in
+fragmentation. In the following analyses, we
+employ panel regression models with ran-
+dom effects to best capture the effect of both
+within-neighbourhood change in conduits
+and between-neighbourhood variations in
+conduits on crime.
+Figure 1. a) The case study context (Brisbane Statistical Division) and population change (count) by
+neighbourhood between Wave 2 (2008/2009) and Wave 4 (2012/2013); b) Changes in neighbourhood
+social spaces between Wave 2 (2008/2009) and Wave 4 (2012/2013) across the case study context
+(Brisbane Statistical Division).
+Results
+Table 1 presents descriptive statistics for
+each of the variables of interest. Model
+results are presented in Table 2.
+Model 1 reveals that decreases in social
+holes (B= - 0.025, p \ 0.01) and unde-
+veloped land over time (B= - 0.043, p \
+0.001) are associated with higher collective
+efficacy, as is increased physical fragmenta-
+tion (B = 0.103, p \ 0.05). Over time,
+reductions in diversity (B= - 666, p \
+0.001) and increases in residential mobility
+(B = 0.004, p \ 0.001) are also associated
+with higher collective efficacy. Given that
+many neighbourhoods have grown and
+developed in Brisbane, the relationship
+between the percentage of new residents in
+the neighbourhood and enhanced collective
+efficacy is in line with what we would expect,
+as this growth likely signals prosperity and
+neighbourhood enhancement. There is no
+significant association between social con-
+duits and collective efficacy over time.
+In relation to property theft, Model 2
+reveals that lower collective efficacy is
+associated with higher theft over time (B=
+- 0.351, p \ 0.001). The model also
+shows that increases in scheduled social con-
+duits (cinemas, restaurants, train stations)
+(B = 0.075, p \ 0.01), social holes (B=
+0.047, p \ 0.01) and fragmentation (B=
+0.239, p \ 0.01) are associated with more
+theft over time. After controlling for collec-
+tive efficacy, higher disadvantage (B=0.015,
+p\0.001), diversity (B = 1.311, p \ 0.001),
+mobility (B=- 0.009, p \ 0.01) and density
+(B = 0.017, p \ 0.001) are associated with
+higher recorded theft over time, as we would
+expect from previous social disorganisation
+research. There is no significant association
+between anchoring, local exposure or extra-
+local exposure conduits and theft over time.
+Model 3 shows that nuisance displays
+similar results to the theft model. The results
+suggest that reductions in collective efficacy
+are associated with higher recorded offences
+(B=- 0.351, p \ 0.01). Increases in sched-
+uled social conduits (cinemas, restaurants,
+train stations) (B = 0.092, p\0.05),
+undeveloped land (B = 0.057, p \ 0.05)
+and disadvantage (B = 0.027, p \ 0.001)
+also indicate higher nuisance over time.
+There is no significant association between
+anchoring, local exposure or extra-local
+exposure conduits and nuisance crimes over
+time.
+Discussion
+Neighbourhoods play a central role in peo-
+ple’s daily lives. Places within neighbour-
+hoods provide a range of services and
+amenities. They also generate social interac-
+tion potential by bringing individuals
+together during their daily routines.
+Some neighbourhood places such as social
+conduits facilitate pro-social interactions,
+and consequently support the development
+of social cohesion and the transmission of
+behavioural norms (Cattell et al., 2008).
+Neighbourhoods with a greater number of
+social conduits have higher interaction
+potential that may support the development
+of collective efficacy. The current study
+explored how changes in the presence and
+arrangement of social conduits, social holes
+and physical fragmentation are associated
+with collective efficacy, theft and nuisance
+crime over time. We classified places that
+facilitate passive or active human interaction
+as social conduits, and features that discou-
+rage social conviviality as social holes and
+physical fragmentation. We hypothesised
+that changes in the presence or arrangement
+of social conduits and holes within neigh-
+bourhoods over time would incur
+neighbourhood-level changes in (a) collec-
+tive efficacy, and (b) theft and nuisance
+crimes. Drawing on crime opportunities and
+neighbourhood social control theories, we
+hypothesised that, as a result of shifting pat-
+terns of interaction that enable the develop-
+ment of familiarity, shared values and
+norms, changes in the physical environment would disrupt collective efficacy and provide
+opportunities for crime, at least in the short
+term (Anderson, 1990; Kreager et al., 2011;
+Stucky and Ottensmann, 2009). Our findings
+partially support this hypothesis, although
+some results were unexpected.
+First, social conduits were not associated
+with collective efficacy over time. Rather,
+fewer social holes and less undeveloped land
+in neighbourhoods over time may be benefi-
+cial for collective efficacy. Social holes com-
+prise land uses that detract from the social
+fabric by discouraging thoroughfare and
+therefore limiting opportunities for social
+interactions (Hipp et al., 2014). Similarly,
+undeveloped land and vacant properties pro-
+vide limited social interaction potential. A
+reduction in these types of places over the
+time period considered, along with increases
+in physical fragmentation and residential
+mobility, indicate conditions associated with
+the process of gentrification and/or land use
+conversion (Barton and Gruner, 2016;
+Papachristos et al., 2011). Similar to prior
+research on gentrification, our results sug-
+gest that when neighbourhoods undergo
+physical development characteristic of this
+process, it can support the growth of collec-
+tive efficacy and reduced crime over time
+(Papachristos et al., 2011; Steinmetz-Wood
+et al., 2017; Zukin et al., 2009). While the
+benefits of gentrification and neighbourhood
+physical upgrade have been noted in previ-
+ous studies, scholars have also highlighted
+that the process by which existing neigh-
+bourhood places are replaced by amenities
+that cater to the in-coming middle-class
+populace can exclude long-term residents
+(Barton and Gruner, 2016) and in particular
+racial minority groups (Hyra, 2017). While
+our results suggest that neighbourhood
+physical development may be associated
+with greater collective efficacy over time,
+this is not necessarily at odds with the sug-
+gestion that particular individuals or groups
+in the community are socially and physically
+displaced by such development (Atkinson,
+2004; Barton and Gruner, 2016). For exam-
+ple, removal of social holes, including indus-
+trial establishments and factories, may
+provide social benefits for incoming resi-
+dents while at the same time equating to
+employment loss for some long-time resi-
+dents by forcing them to relocate.
+Model 2 predicting theft and Model 3 pre-
+dicting nuisance crimes across time both
+demonstrated some support for our hypoth-
+esis that changes in collective efficacy and
+requisite changes in the presence and
+arrangement of social conduits, social holes,
+undeveloped land and physical fragmenta-
+tion have implications for crime. Results
+show that within-neighbourhood increases
+in scheduled conduits (type 3 conduits) and
+social holes / undeveloped land, along with
+decreases in collective efficacy, are associated
+with higher theft and nuisance crimes. Taken
+together, model results predicting collective
+efficacy (Model 1), theft (Model 2) and nui-
+sance crimes (Model 3) can be interpreted to
+suggest that within-neighbourhood change
+in social holes influences collective efficacy
+(Model 1) and in turn crime (Models 2 and
+3). Yet the addition of scheduled conduits
+(type 3 social conduits) is not associated with
+collective efficacy (Model 1), suggesting that
+scheduled conduits influence crime directly
+by creating opportune settings for theft and
+nuisance (Models 2 and 3). Scheduled con-
+duits align most directly with typical crime
+generators (Brantingham and Brantingham,
+1995) in that they act to bring people
+together for legitimate purposes, but, due to
+their tendency to (a) attract local and extra-
+local visitors, and (b) generate crowds, they
+can facilitate temporally bounded gaps in
+surveillance and ephemeral dilution of loca-
+lised familiarity at places. Such situations
+discourage active guardianship and create
+crime opportunities that can be exploited by
+would-be offenders (Reynald, 2014; Reynald
+and Elffers, 2009). Thus, an increase in these types of places is associated with more crime
+but not necessarily weaker collective efficacy
+at the neighbourhood level.
+A limitation of many studies examining
+the impact of neighbourhood places on
+crime is that they lack data to capture loca-
+lised social processes over time. So, while
+existing scholarship provides rich theoretical
+propositions regarding the potential
+mechanisms through which neighbourhood
+places exert an influence on crime, empirical
+assessments that unpack the process over
+time are limited. As our models do not
+establish temporal ordering, we do not fully
+address this issue here. Nonetheless, our
+findings do highlight that some neighbour-
+hood places impact both collective efficacy
+and crime over time while others only
+impact crime. This suggests that features
+contributing to collective efficacy, and collec-
+tive efficacy itself, may be unevenly distribu-
+ted within individual neighbourhoods. This
+aligns with Weisburd and colleagues’ (2020)
+findings evidencing the relevance of collective
+efficacy at the level of the street segment for
+crime, and supports the need to further con-
+sider the role of micro-places in the develop-
+ment and maintenance of social processes
+that facilitate informal social control.
+As our study focused on the neighbour-
+hood as the unit of analysis, we were not
+able to establish the extent to which within-
+neighbourhood shifts in social conduits or
+social holes may displace crime and/or pro-
+social opportunities to other areas within the
+same neighbourhood or the requisite impacts
+of such shifts on collective efficacy in smaller
+spatial units. To capture this phenomenon
+requires the computation of additional
+metrics such as the Moran’s I (Moran, 1950)
+to measure the spatial arrangement of social
+conduits. While our measure of spatial
+arrangement captures the level of fragmenta-
+tion of all places in the neighbourhood, it
+does not provide insight into the spatial clus-
+tering of types of social conduits specifically.
+Using Moran’s I, one could measure the
+extent to which social conduits or social
+holes were positively or negatively spatially
+auto-correlated. In doing so it would be pos-
+sible to characterise the extent to which
+neighbourhood places tended towards a spa-
+tially clustered arrangement versus one that
+was more spatially dispersed. This offers an
+interesting avenue for future research on the
+micro-spatial arrangements of social con-
+duits and social holes and their role in shap-
+ing collective efficacy and crime.
+Limitations
+We note several limitations of the current
+study. First, our data span a relatively short
+time period (five years), which means we are
+limited to observing relatively short-term
+physical changes and their implications on
+crime. A longer observation period would
+also provide capacity to establish temporal
+ordering through the utilisation of temporal
+lags within the panel model structure.
+Second, we looked at theft and nuisance
+because they can be opportunistic and theo-
+retically these types of offences are parsimo-
+nious with the crime opportunities and
+neighbourhood social control framework we
+propose. However, this limits the capacity of
+our study findings to be applied to violent
+crimes or household burglary, which may be
+differentially influenced by physical features
+of the neighbourhood.
+Conclusion
+At the turn of the 20th century, urban scho-
+lars cautioned that urbanism led to weak
+social bonds (Wirth, 1938) and social aliena-
+tion (Simmel, 1997 [1903]). Although subse-
+quent research has found evidence that
+contradicts such claims, contemporary scho-
+larship converges with early urban sociolo-
+gists on two important points: that the
+physical environment in which people live has a real and measurable impact on their
+lives, and that the effects are mediated by
+neighbourhood social control (Massey,
+1996). With over half of the world’s popula-
+tion already residing in urban areas (United
+Nations, 2018), it is of critical importance
+that we develop the requisite understanding
+through which we can direct the (re)design
+and best support the development of safe,
+socially inclusive neighbourhoods essential
+for the wellbeing of our populations.
+This study goes beyond the existing litera-
+ture by examining the association between
+neighbourhood places, collective efficacy and
+crime longitudinally. An important point of
+difference between this study and previous
+research is our classification of neighbour-
+hood places into types of social conduits and
+social holes based on their potential social
+interaction patterns. By doing this, our
+results were able to demonstrate a need to
+consider the implications of various neigh-
+bourhood features differently. Currently,
+zoning and land use regulations tend to con-
+sider broad categories of land use such as
+residential, commercial and retail. Yet the
+findings of our study suggest that street-front
+retail should be considered differently from
+restaurant facilities, which are often classified
+under the same zoning category.
+Reconfiguring the built environment is no
+easy task. It requires sustained financial
+investment and a comprehensive and coordi-
+nated approach that targets both policy and
+practice. There are many actors that influ-
+ence urban processes, across various profes-
+sions and institutions, each responsible for
+policies, plans or projects playing roles in
+multiple aspects of the built environment. If
+we intend to increment our urban environ-
+ments towards becoming more socially sus-
+tainable and socially efficacious places where
+communities can thrive, then this task begins
+by developing both an evidence base and an understanding of how the presence and
+arrangement of places within neighbourhood
+settings can be purposefully used to increase
+the rate of pro-social encounters while redu-
+cing the rate of anti-social encounters.

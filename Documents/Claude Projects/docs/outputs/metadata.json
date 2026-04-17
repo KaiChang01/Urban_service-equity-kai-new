@@ -1,0 +1,364 @@
+{
+  "config": {
+    "k": 4,
+    "random_state": 42,
+    "cluster_features": [
+      "median_rent",
+      "median_resolution_days",
+      "median_property_age",
+      "request_intensity",
+      "pct_311_external_request",
+      "pct_street_and_sidewalk_cleaning"
+    ],
+    "service_cols": [
+      "total_311_requests",
+      "avg_resolution_days",
+      "median_resolution_days",
+      "num_unique_services",
+      "pct_street_and_sidewalk_cleaning",
+      "pct_tree_maintenance",
+      "pct_streetlights",
+      "pct_rec_and_park_requests",
+      "pct_graffiti",
+      "pct_encampments",
+      "pct_illegal_postings",
+      "pct_abandoned_vehicle",
+      "pct_noise_report"
+    ],
+    "need_cols": [
+      "unit_count_clean",
+      "bedrooms_for_ratio",
+      "sqft_avg",
+      "sqft_per_resident",
+      "bathrooms_per_resident",
+      "property_age",
+      "likely_rent_controlled",
+      "monthly_rent_clean",
+      "occupancy_duration_years"
+    ],
+    "cluster_names": {
+      "0": "Cluster A — High-Rent, Low Service Volume",
+      "1": "Cluster B — Dominant Residential",
+      "2": "Cluster C — High-Density Outlier",
+      "3": "Cluster D — Slow Resolution Hotspot"
+    }
+  },
+  "pca_weights": {
+    "service_performance": {
+      "S1": 0.6108169484534884,
+      "S2": -0.007841458337331868,
+      "S3": 0.6344330062634999,
+      "S4_pos": 0.43912595169607704,
+      "S4_neg": 0.17749458054708256
+    },
+    "service_need": {
+      "N1": -0.5441157585193753,
+      "N2": 0.6035508725010269,
+      "N3": 0.5293642444321772,
+      "N4": -0.21619633088106988,
+      "N5": -0.11268109364240195
+    }
+  },
+  "top3_features_per_cluster": {
+    "0": [
+      {
+        "feature": "N3",
+        "z": -1.3186881158729618,
+        "direction": "below_city_avg"
+      },
+      {
+        "feature": "S2",
+        "z": -0.7485190542917751,
+        "direction": "below_city_avg"
+      },
+      {
+        "feature": "S4_neg",
+        "z": 0.49179560827654945,
+        "direction": "above_city_avg"
+      }
+    ],
+    "1": [
+      {
+        "feature": "S4_pos",
+        "z": -0.645733053448641,
+        "direction": "below_city_avg"
+      },
+      {
+        "feature": "S3",
+        "z": -0.3722326820847912,
+        "direction": "below_city_avg"
+      },
+      {
+        "feature": "S1",
+        "z": -0.2610760303763473,
+        "direction": "below_city_avg"
+      }
+    ],
+    "2": [
+      {
+        "feature": "S1",
+        "z": -0.9073556271362149,
+        "direction": "below_city_avg"
+      },
+      {
+        "feature": "S4_pos",
+        "z": -0.8087658120555885,
+        "direction": "below_city_avg"
+      },
+      {
+        "feature": "S3",
+        "z": -0.759756376189661,
+        "direction": "below_city_avg"
+      }
+    ],
+    "3": [
+      {
+        "feature": "S4_pos",
+        "z": 0.9694293338927881,
+        "direction": "above_city_avg"
+      },
+      {
+        "feature": "S3",
+        "z": 0.576378175707908,
+        "direction": "above_city_avg"
+      },
+      {
+        "feature": "S1",
+        "z": 0.5696441247654763,
+        "direction": "above_city_avg"
+      }
+    ]
+  },
+  "heuristics": {
+    "0": {
+      "archetype": "High-Rent, Low Service Volume",
+      "signal": "Newer stock + lower 311 demand — may mask under-reporting by renters",
+      "needs": [
+        {
+          "rank": 1,
+          "priority": "HIGH",
+          "title": "Proactive Property Maintenance Outreach",
+          "desc": "High rent + low service volume may mask deferred maintenance or tenant reluctance to report.",
+          "actions": [
+            "Conduct proactive inspections in rent-controlled units",
+            "Deploy predictive maintenance alerts for aging infrastructure",
+            "Create landlord accountability portal for 311 requests"
+          ]
+        },
+        {
+          "rank": 2,
+          "priority": "HIGH",
+          "title": "Affordability & Displacement Prevention",
+          "desc": "High rent with moderate service response. Residents may under-report fearing eviction.",
+          "actions": [
+            "Expand multilingual tenant rights education and hotline",
+            "Partner with community orgs for confidential 311 submission",
+            "Track displacement-correlated service gaps longitudinally"
+          ]
+        },
+        {
+          "rank": 3,
+          "priority": "MED",
+          "title": "Service Volume Equity Audit",
+          "desc": "Low 311 volume in high-rent areas may signal demand suppression, not satisfaction.",
+          "actions": [
+            "Compare utilization vs. physical infrastructure condition",
+            "Investigate service equity for low-income renters in high-rent zones",
+            "Establish per-income-tier equity benchmarks within cluster"
+          ]
+        }
+      ],
+      "queue": [
+        [
+          "01",
+          "Audit rent-controlled units for deferred maintenance backlog",
+          "High rent + low volume is a suppression signal, not a success metric."
+        ],
+        [
+          "02",
+          "Deploy multilingual 311 outreach in high-rent displacement corridors",
+          "Non-English speakers in high-rent zones are least likely to self-report."
+        ],
+        [
+          "03",
+          "Cross-reference 311 gaps with housing court filings",
+          "Litigation spikes often precede 311 volume — early warning system."
+        ]
+      ]
+    },
+    "1": {
+      "archetype": "Dominant Residential",
+      "signal": "High volume, moderate affordability stress, elevated cleaning demand",
+      "needs": [
+        {
+          "rank": 1,
+          "priority": "HIGH",
+          "title": "Street & Sidewalk Cleaning Scale-Up",
+          "desc": "Highest cleaning request rate citywide — signals systemic under-staffing.",
+          "actions": [
+            "Increase street sweeping frequency in high-density corridors",
+            "Install additional litter infrastructure at chokepoints",
+            "Pilot automated cleaning notification via 311 app"
+          ]
+        },
+        {
+          "rank": 2,
+          "priority": "MED",
+          "title": "Tree Canopy & Green Space Maintenance",
+          "desc": "Elevated tree maintenance requests correlated with aging street trees.",
+          "actions": [
+            "Prioritize tree inventory audit in blocks with highest 311 tree requests",
+            "Establish community stewardship programs for green corridors",
+            "Accelerate DPW tree trimming cycle from 10yr to 5yr target"
+          ]
+        },
+        {
+          "rank": 3,
+          "priority": "HIGH",
+          "title": "Housing Density Pressure Relief",
+          "desc": "High occupancy ratio suggests units may be over-occupied relative to capacity.",
+          "actions": [
+            "Expand secondary unit permitting in under-utilized parcels",
+            "Increase housing inspection capacity for overcrowding reports",
+            "Target density relief through inclusionary infill housing pipeline"
+          ]
+        }
+      ],
+      "queue": [
+        [
+          "01",
+          "Surge street cleaning crews to top 20% density grid cells",
+          "Cleaning requests are proportional to unmet daily maintenance burden."
+        ],
+        [
+          "02",
+          "Fast-track tree trimming in corridors with 3+ open requests",
+          "Deferred tree maintenance creates escalating liability and safety risk."
+        ],
+        [
+          "03",
+          "Conduct housing overcrowding inspection sweep in flagged cells",
+          "High density + long occupancy duration = silent overcrowding growth."
+        ]
+      ]
+    },
+    "2": {
+      "archetype": "High-Density Outlier",
+      "signal": "Extreme volume + severe crowding + minimal positive services — statistical anomaly",
+      "needs": [
+        {
+          "rank": 1,
+          "priority": "CRITICAL",
+          "title": "Emergency High-Volume Service Infrastructure",
+          "desc": "Exceptional 311 volume + critically low positive service delivery — system overwhelmed.",
+          "actions": [
+            "Deploy dedicated service crew to this cell immediately",
+            "Triage 311 backlog by complaint age and recurrence frequency",
+            "Assess if this cell is a routing anomaly or genuine hotspot"
+          ]
+        },
+        {
+          "rank": 2,
+          "priority": "CRITICAL",
+          "title": "Crowding Investigation & Housing Audit",
+          "desc": "Severe space crowding relative to building capacity. Likely undocumented multi-family.",
+          "actions": [
+            "Immediate housing inspection referral",
+            "Cross-check building permits against occupancy data",
+            "Engage community health workers for vulnerable resident outreach"
+          ]
+        },
+        {
+          "rank": 3,
+          "priority": "HIGH",
+          "title": "Public Space Access Deficit",
+          "desc": "Low positive service rate in high-density zone creates compounded livability pressure.",
+          "actions": [
+            "Prioritize parklet or open space installation in adjacent blocks",
+            "Increase sidewalk maintenance inspection frequency",
+            "Establish community liaison for recurring public space issues"
+          ]
+        }
+      ],
+      "queue": [
+        [
+          "01",
+          "Immediate multi-agency triage — 5sigma statistical outlier",
+          "Volume + crowding + low services = highest composite risk in dataset."
+        ],
+        [
+          "02",
+          "Deploy housing inspector and community health worker jointly",
+          "Co-deployment reduces duplicate visits and builds resident trust."
+        ],
+        [
+          "03",
+          "Escalate to supervisor district for emergency resource allocation",
+          "Single-cell anomaly at this scale warrants political escalation."
+        ]
+      ]
+    },
+    "3": {
+      "archetype": "Slow Resolution Hotspot",
+      "signal": "Resolution time 5.5 sigma above city mean — institutional failure zone",
+      "needs": [
+        {
+          "rank": 1,
+          "priority": "CRITICAL",
+          "title": "Emergency Resolution Time Intervention",
+          "desc": "Resolution days are 5.5 standard deviations above city mean — systemic failure.",
+          "actions": [
+            "Audit all open 311 tickets in this cluster older than 30 days",
+            "Assign dedicated case manager to chronic unresolved complaints",
+            "Auto-escalate any ticket open more than 14 days"
+          ]
+        },
+        {
+          "rank": 2,
+          "priority": "HIGH",
+          "title": "Encampment & Disorder Stabilization",
+          "desc": "Elevated negative signals (encampments, graffiti, abandoned vehicles) compound slow resolution.",
+          "actions": [
+            "Coordinate HSOC and DPW joint sweeps with rehousing referrals",
+            "Deploy graffiti abatement within 48h of report",
+            "Establish abandoned vehicle fast-track tow program"
+          ]
+        },
+        {
+          "rank": 3,
+          "priority": "MED",
+          "title": "Systemic Service Routing Reform",
+          "desc": "Slow resolution often caused by inter-agency routing inefficiencies.",
+          "actions": [
+            "Audit 311 routing logs for inter-agency handoff failures",
+            "Implement case ownership accountability by supervisor district",
+            "Create resolution SLA dashboard visible to department heads"
+          ]
+        }
+      ],
+      "queue": [
+        [
+          "01",
+          "Audit all 311 tickets older than 30 days in Cluster D",
+          "A 5.5sigma resolution delay is institutional failure, not backlog."
+        ],
+        [
+          "02",
+          "Joint HSOC + DPW deployment for encampment clearance with rehousing",
+          "Co-deployment with rehousing prevents cycling; clearance alone does not."
+        ],
+        [
+          "03",
+          "Implement 14-day auto-escalation rule for all Cluster D tickets",
+          "Without structural escalation triggers, chronic delays persist indefinitely."
+        ]
+      ]
+    }
+  },
+  "artifacts": {
+    "grid_results_csv": "grid_results.csv",
+    "cluster_summary_csv": "cluster_summary.csv",
+    "cluster_feature_zscores_csv": "cluster_feature_zscores.csv",
+    "rent_inventory_csv": "rent_dataset_module2.csv"
+  }
+}
