@@ -18,7 +18,14 @@ const els = {
   selectionEmpty: document.getElementById("selectionEmpty"),
   selection: document.getElementById("selection"),
   selGridId: document.getElementById("selGridId"),
+  // cluster mode fields
+  selClusterSection: document.getElementById("selClusterSection"),
   selCluster: document.getElementById("selCluster"),
+  selClusterN: document.getElementById("selClusterN"),
+  selClusterEquityMean: document.getElementById("selClusterEquityMean"),
+  selClusterTop: document.getElementById("selClusterTop"),
+  // equity mode fields
+  selEquitySection: document.getElementById("selEquitySection"),
   selEquity: document.getElementById("selEquity"),
   selTop: document.getElementById("selTop"),
   clusterLink: document.getElementById("clusterLink"),
@@ -46,6 +53,7 @@ let geo = null;
 let summaryRows = [];
 let zRows = [];
 let zChart = null;
+let selectedProps = null;
 const EQUITY_HIST_BINS_MAX = 10;
 let sortedScores = []; // ascending-sorted raw equity scores for percentile ranking
 
@@ -201,20 +209,51 @@ function renderLegend() {
 }
 
 function clearSelection() {
+  selectedProps = null;
   els.selectionEmpty.classList.remove("hidden");
   els.selection.classList.add("hidden");
 }
 
 function setSelection(props) {
+  selectedProps = props;
   els.selectionEmpty.classList.add("hidden");
   els.selection.classList.remove("hidden");
   els.selGridId.textContent = props.grid_id ?? "—";
-  els.selCluster.textContent = clusterName(props.cluster);
-  els.selEquity.textContent = Number.isFinite(Number(props.equity_score)) ? `${rawToPercent(Number(props.equity_score)).toFixed(1)}%` : "—";
-  els.selTop.textContent = props.top3_features ?? "—";
-  els.clusterLink.href = `#report`;
 
-  // Update report to this cluster and scroll down
+  const mode = els.colorMode.value;
+
+  if (mode === "cluster") {
+    els.selClusterSection.classList.remove("hidden");
+    els.selEquitySection.classList.add("hidden");
+
+    els.selCluster.textContent = clusterName(props.cluster);
+
+    const row = summaryRows.find((r) => String(r.cluster) === String(props.cluster));
+    els.selClusterN.textContent = row?.n_grids_scored?.toLocaleString?.() ?? "—";
+    els.selClusterEquityMean.textContent = row ? fmt(row.equity_mean, 2) : "—";
+
+    const zRow = zRows.find((r) => String(r.cluster) === String(props.cluster));
+    els.selClusterTop.textContent = zRow
+      ? Object.entries(zRow)
+          .filter(([k]) => k !== "cluster")
+          .map(([k, v]) => ({ k, z: Number(v) }))
+          .filter((d) => Number.isFinite(d.z))
+          .sort((a, b) => Math.abs(b.z) - Math.abs(a.z))
+          .slice(0, 3)
+          .map((d) => INDICATOR_LABELS[d.k] ?? d.k)
+          .join(", ")
+      : "—";
+  } else {
+    els.selClusterSection.classList.add("hidden");
+    els.selEquitySection.classList.remove("hidden");
+
+    els.selEquity.textContent = Number.isFinite(Number(props.equity_score))
+      ? Number(props.equity_score).toFixed(2)
+      : "—";
+    els.selTop.textContent = props.top3_features ?? "—";
+  }
+
+  els.clusterLink.href = "#report";
   setReportCluster(props.cluster);
   setTimeout(() => {
     els.reportAnchor?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -424,6 +463,7 @@ els.applyFilters.addEventListener("click", () => {
 els.colorMode.addEventListener("change", () => {
   renderLegend();
   rebuildLayer();
+  if (selectedProps) setSelection(selectedProps);
 });
 els.clearSelection.addEventListener("click", () => clearSelection());
 els.reportCluster?.addEventListener("change", (e) => setReportCluster(e.target.value));

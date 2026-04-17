@@ -19,7 +19,7 @@
       <div class="brand">
         <div class="title">Equity Dashboard</div>
         <div class="subtitle">Map (Equity-first) → Cluster Report</div>
-        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-17 v5</div>
+        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-17 v6</div>
       </div>
 
       <div class="controls">
@@ -84,30 +84,45 @@
 
         <div id="selection" class="selection hidden">
           <div class="kv">
-            <div class="k">Grid</div>
+            <div class="k">Grid cell</div>
             <div class="v" id="selGridId">—</div>
           </div>
-          <div class="kv">
-            <div class="k">Cluster</div>
-            <div class="v" id="selCluster">—</div>
+
+          <!-- cluster mode -->
+          <div id="selClusterSection" class="hidden">
+            <div class="kv">
+              <div class="k">Cluster</div>
+              <div class="v" id="selCluster">—</div>
+            </div>
+            <div class="kv">
+              <div class="k">Grid cells in cluster</div>
+              <div class="v" id="selClusterN">—</div>
+            </div>
+            <div class="kv">
+              <div class="k">Equity mean</div>
+              <div class="v" id="selClusterEquityMean">—</div>
+            </div>
+            <div class="kv">
+              <div class="k">Top features</div>
+              <div class="v" id="selClusterTop">—</div>
+            </div>
           </div>
-          <div class="kv">
-            <div class="k">Equity</div>
-            <div class="v" id="selEquity">—</div>
-          </div>
-          <div class="kv">
-            <div class="k">Top features (cluster)</div>
-            <div class="v" id="selTop">—</div>
+
+          <!-- equity mode -->
+          <div id="selEquitySection">
+            <div class="kv">
+              <div class="k">Equity score</div>
+              <div class="v" id="selEquity">—</div>
+            </div>
+            <div class="kv">
+              <div class="k">Top features</div>
+              <div class="v" id="selTop">—</div>
+            </div>
           </div>
 
           <div class="actions">
             <a id="clusterLink" class="btn" href="#report">View cluster report</a>
             <button id="clearSelection" class="btn secondary">Clear</button>
-          </div>
-
-          <div class="hint">
-            Tip: Use <b>Equity</b> view to find hotspots, then switch to <b>Cluster</b> to explain
-            root causes.
           </div>
         </div>
       </aside>
