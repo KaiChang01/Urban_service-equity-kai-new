@@ -248,10 +248,19 @@ function renderSummary(c) {
   if (!row) return;
   els.statN.textContent = row.n_grids_scored?.toLocaleString?.() ?? String(row.n_grids_scored ?? "—");
   els.statEquityMean.textContent = fmt(row.equity_mean, 2);
-  els.statEquityMedian.textContent = fmt(row.equity_median, 2);
-  els.statEquityBand.textContent = `${fmt(row.equity_p10, 2)} → ${fmt(row.equity_p90, 2)}`;
-  els.statPerf.textContent = fmt(row.performance_mean, 2);
-  els.statNeed.textContent = fmt(row.need_mean, 2);
+
+  const zRow = zRows.find((r) => String(r.cluster) === String(c));
+  if (zRow) {
+    const top3 = Object.entries(zRow)
+      .filter(([k]) => k !== "cluster")
+      .map(([k, v]) => ({ k, z: Number(v) }))
+      .filter((d) => Number.isFinite(d.z))
+      .sort((a, b) => Math.abs(b.z) - Math.abs(a.z))
+      .slice(0, 3)
+      .map((d) => `${INDICATOR_LABELS[d.k] ?? d.k} (${d.z > 0 ? "+" : ""}${d.z.toFixed(2)})`)
+      .join("<br>");
+    els.statTop3.innerHTML = top3 || "—";
+  }
 }
 
 function renderZChart(c) {
