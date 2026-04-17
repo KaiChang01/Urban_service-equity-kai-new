@@ -45,87 +45,87 @@
   },
   "pca_weights": {
     "service_performance": {
-      "S1": 0.6108169484534884,
-      "S2": -0.007841458337331868,
-      "S3": 0.6344330062634999,
-      "S4_pos": 0.43912595169607704,
-      "S4_neg": 0.17749458054708256
+      "S1": 0.20787968069817286,
+      "S2": -0.35114088016077744,
+      "S3": 0.36096977106498973,
+      "S4_pos": -0.5747631594061423,
+      "S4_neg": 0.610601552241312
     },
     "service_need": {
-      "N1": -0.5441157585193753,
-      "N2": 0.6035508725010269,
-      "N3": 0.5293642444321772,
-      "N4": -0.21619633088106988,
-      "N5": -0.11268109364240195
+      "N1": 0.5780125747440112,
+      "N2": -0.5610385025797162,
+      "N3": -0.30286459900234053,
+      "N4": 0.5063986201530731,
+      "N5": 0.05450444237971313
     }
   },
   "top3_features_per_cluster": {
     "0": [
       {
         "feature": "N3",
-        "z": -1.3186881158729618,
+        "z": -0.8968764708581579,
         "direction": "below_city_avg"
       },
       {
-        "feature": "S2",
-        "z": -0.7485190542917751,
+        "feature": "S1",
+        "z": -0.6075883094924261,
         "direction": "below_city_avg"
       },
       {
-        "feature": "S4_neg",
-        "z": 0.49179560827654945,
-        "direction": "above_city_avg"
+        "feature": "N4",
+        "z": -0.5138187767451311,
+        "direction": "below_city_avg"
       }
     ],
     "1": [
       {
-        "feature": "S4_pos",
-        "z": -0.645733053448641,
-        "direction": "below_city_avg"
-      },
-      {
-        "feature": "S3",
-        "z": -0.3722326820847912,
-        "direction": "below_city_avg"
+        "feature": "N3",
+        "z": 0.31672557590091643,
+        "direction": "above_city_avg"
       },
       {
         "feature": "S1",
-        "z": -0.2610760303763473,
-        "direction": "below_city_avg"
+        "z": 0.21606354431142918,
+        "direction": "above_city_avg"
+      },
+      {
+        "feature": "N4",
+        "z": 0.18256518646763456,
+        "direction": "above_city_avg"
       }
     ],
     "2": [
       {
-        "feature": "S1",
-        "z": -0.9073556271362149,
-        "direction": "below_city_avg"
-      },
-      {
         "feature": "S4_pos",
-        "z": -0.8087658120555885,
+        "z": -1.1945076145543208,
         "direction": "below_city_avg"
       },
       {
-        "feature": "S3",
-        "z": -0.759756376189661,
+        "feature": "S1",
+        "z": 0.947588890200399,
+        "direction": "above_city_avg"
+      },
+      {
+        "feature": "N2",
+        "z": -0.6460974057003062,
         "direction": "below_city_avg"
       }
     ],
     "3": [
       {
+        "feature": "S2",
+        "z": -5.459433760541566,
+        "direction": "below_city_avg"
+      },
+      {
+        "feature": "S4_neg",
+        "z": 1.1731971907146892,
+        "direction": "above_city_avg"
+      },
+      {
         "feature": "S4_pos",
-        "z": 0.9694293338927881,
-        "direction": "above_city_avg"
-      },
-      {
-        "feature": "S3",
-        "z": 0.576378175707908,
-        "direction": "above_city_avg"
-      },
-      {
-        "feature": "S1",
-        "z": 0.5696441247654763,
-        "direction": "above_city_avg"
+        "z": -0.8435508626721223,
+        "direction": "below_city_avg"
       }
     ]
   },
@@ -358,7 +358,6 @@
   "artifacts": {
     "grid_results_csv": "grid_results.csv",
     "cluster_summary_csv": "cluster_summary.csv",
-    "cluster_feature_zscores_csv": "cluster_feature_zscores.csv",
-    "rent_inventory_csv": "rent_dataset_module2.csv"
+    "cluster_feature_zscores_csv": "cluster_feature_zscores.csv"
   }
 }
