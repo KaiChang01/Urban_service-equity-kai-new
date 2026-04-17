@@ -1,6 +1,5 @@
 import { CLUSTER_COLORS, equityColor, clamp, INDICATOR_LABELS, fmt } from "./utils.js";
 
-// Resolve from this module so paths work on GitHub Pages, local /docs server, or nested URLs.
 const DATA_BASE = new URL("../outputs/", import.meta.url);
 const DATA_GEOJSON = new URL("grid_points.geojson", DATA_BASE).href;
 const DATA_META = new URL("metadata.json", DATA_BASE).href;
@@ -15,6 +14,7 @@ const els = {
   applyFilters: document.getElementById("applyFilters"),
   legend: document.getElementById("legend"),
   dataPath: document.getElementById("dataPath"),
+  selPanelTitle: document.getElementById("selPanelTitle"),
   selectionEmpty: document.getElementById("selectionEmpty"),
   selection: document.getElementById("selection"),
   selGridId: document.getElementById("selGridId"),
@@ -28,20 +28,7 @@ const els = {
   selEquitySection: document.getElementById("selEquitySection"),
   selEquity: document.getElementById("selEquity"),
   selTop: document.getElementById("selTop"),
-  clusterLink: document.getElementById("clusterLink"),
   clearSelection: document.getElementById("clearSelection"),
-
-  // report section
-  reportCluster: document.getElementById("reportCluster"),
-  reportAnchor: document.getElementById("report"),
-  clusterName: document.getElementById("clusterName"),
-  statN: document.getElementById("statN"),
-  statEquityMean: document.getElementById("statEquityMean"),
-  statTop3: document.getElementById("statTop3"),
-  direNeeds: document.getElementById("direNeeds"),
-  priorityQueue: document.getElementById("priorityQueue"),
-  pcaS: document.getElementById("pcaS"),
-  pcaN: document.getElementById("pcaN"),
 };
 
 els.dataPath.textContent = "outputs/grid_points.geojson";
@@ -52,14 +39,12 @@ let layer = null;
 let geo = null;
 let summaryRows = [];
 let zRows = [];
-let zChart = null;
 let selectedProps = null;
 const EQUITY_HIST_BINS_MAX = 10;
-let sortedScores = []; // ascending-sorted raw equity scores for percentile ranking
+let sortedScores = [];
 
 function clusterName(c) {
   if (!meta?.config?.cluster_names) return `Cluster ${c}`;
-  // keys may be strings in JSON
   return meta.config.cluster_names[String(c)] ?? meta.config.cluster_names[c] ?? `Cluster ${c}`;
 }
 
@@ -82,7 +67,6 @@ function selectedEquityRange() {
 }
 
 function histogramBinsForSpan(span) {
-  // Keep bins readable for narrow ranges (e.g. 46-47) while preserving detail.
   const bySpan = Math.round(span * 2);
   return Math.max(4, Math.min(EQUITY_HIST_BINS_MAX, bySpan));
 }
@@ -96,15 +80,25 @@ function fmtBinEdge(v, span) {
 function rawToPercent(score) {
   const n = sortedScores.length;
   if (!n) return 0;
-  // binary search: find first index where sortedScores[i] >= score
   let lo = 0, hi = n;
   while (lo < hi) {
     const mid = (lo + hi) >> 1;
     if (sortedScores[mid] < score) lo = mid + 1;
     else hi = mid;
   }
-  // lo/n gives rank fraction; floor to integer percentile 0–99
   return Math.min(99, Math.floor((lo / n) * 100));
+}
+
+function formatTop3(zRow) {
+  if (!zRow) return "—";
+  return Object.entries(zRow)
+    .filter(([k]) => k !== "cluster")
+    .map(([k, v]) => ({ k, z: Number(v) }))
+    .filter((d) => Number.isFinite(d.z))
+    .sort((a, b) => Math.abs(b.z) - Math.abs(a.z))
+    .slice(0, 3)
+    .map((d) => `${INDICATOR_LABELS[d.k] ?? d.k} (${d.z >= 0 ? "+" : ""}${d.z.toFixed(2)})`)
+    .join("<br>");
 }
 
 function markerStyle(props) {
@@ -223,6 +217,7 @@ function setSelection(props) {
   const mode = els.colorMode.value;
 
   if (mode === "cluster") {
+    if (els.selPanelTitle) els.selPanelTitle.textContent = "Cluster Report";
     els.selClusterSection.classList.remove("hidden");
     els.selEquitySection.classList.add("hidden");
 
@@ -233,31 +228,19 @@ function setSelection(props) {
     els.selClusterEquityMean.textContent = row ? fmt(row.equity_mean, 2) : "—";
 
     const zRow = zRows.find((r) => String(r.cluster) === String(props.cluster));
-    els.selClusterTop.textContent = zRow
-      ? Object.entries(zRow)
-          .filter(([k]) => k !== "cluster")
-          .map(([k, v]) => ({ k, z: Number(v) }))
-          .filter((d) => Number.isFinite(d.z))
-          .sort((a, b) => Math.abs(b.z) - Math.abs(a.z))
-          .slice(0, 3)
-          .map((d) => INDICATOR_LABELS[d.k] ?? d.k)
-          .join(", ")
-      : "—";
+    els.selClusterTop.innerHTML = formatTop3(zRow);
   } else {
+    if (els.selPanelTitle) els.selPanelTitle.textContent = "Equity Score Report";
     els.selClusterSection.classList.add("hidden");
     els.selEquitySection.classList.remove("hidden");
 
     els.selEquity.textContent = Number.isFinite(Number(props.equity_score))
       ? Number(props.equity_score).toFixed(2)
       : "—";
-    els.selTop.textContent = props.top3_features ?? "—";
-  }
 
-  els.clusterLink.href = "#report";
-  setReportCluster(props.cluster);
-  setTimeout(() => {
-    els.reportAnchor?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, 0);
+    const zRow = zRows.find((r) => String(r.cluster) === String(props.cluster));
+    els.selTop.innerHTML = formatTop3(zRow);
+  }
 }
 
 async function fetchJson(url) {
@@ -277,118 +260,6 @@ function parseCsv(url) {
       error: (err) => reject(err),
     });
   });
-}
-
-function renderPca() {
-  const p = meta?.pca_weights?.service_performance ?? {};
-  const n = meta?.pca_weights?.service_need ?? {};
-  els.pcaS.textContent = JSON.stringify(p, null, 2);
-  els.pcaN.textContent = JSON.stringify(n, null, 2);
-}
-
-function renderSummary(c) {
-  const row = summaryRows.find((r) => String(r.cluster) === String(c));
-  els.clusterName.textContent = clusterName(c);
-  if (!row) return;
-  els.statN.textContent = row.n_grids_scored?.toLocaleString?.() ?? String(row.n_grids_scored ?? "—");
-  els.statEquityMean.textContent = fmt(row.equity_mean, 2);
-
-  const zRow = zRows.find((r) => String(r.cluster) === String(c));
-  if (zRow) {
-    const top3 = Object.entries(zRow)
-      .filter(([k]) => k !== "cluster")
-      .map(([k, v]) => ({ k, z: Number(v) }))
-      .filter((d) => Number.isFinite(d.z))
-      .sort((a, b) => Math.abs(b.z) - Math.abs(a.z))
-      .slice(0, 3)
-      .map((d) => `${INDICATOR_LABELS[d.k] ?? d.k} (${d.z > 0 ? "+" : ""}${d.z.toFixed(2)})`)
-      .join("<br>");
-    if (els.statTop3) els.statTop3.innerHTML = top3 || "—";
-  }
-}
-
-function renderZChart(c) {
-  const row = zRows.find((r) => String(r.cluster) === String(c));
-  if (!row) return;
-
-  const feats = Object.keys(row).filter(
-    (k) => k !== "cluster" && row[k] !== null && row[k] !== undefined && !Number.isNaN(row[k])
-  );
-  const items = feats
-    .map((k) => ({ k, z: Number(row[k]) }))
-    .sort((a, b) => Math.abs(b.z) - Math.abs(a.z))
-    .slice(0, 6)
-    .reverse();
-
-  const labels = items.map((d) => INDICATOR_LABELS[d.k] ?? d.k);
-  const data = items.map((d) => d.z);
-  const colors = items.map((d) => (d.z >= 0 ? "rgba(34,197,94,.65)" : "rgba(239,68,68,.65)"));
-  const borders = items.map((d) => (d.z >= 0 ? "rgba(34,197,94,1)" : "rgba(239,68,68,1)"));
-
-  const ctx = document.getElementById("zChart");
-  if (zChart) zChart.destroy();
-  zChart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{ label: "z-score", data, backgroundColor: colors, borderColor: borders, borderWidth: 1 }],
-    },
-    options: {
-      indexAxis: "y",
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { color: "rgba(255,255,255,.06)" }, ticks: { color: "rgba(232,234,240,.75)" } },
-        y: { grid: { display: false }, ticks: { color: "rgba(232,234,240,.85)" } },
-      },
-    },
-  });
-}
-
-function renderHeuristics(c) {
-  const h = meta?.heuristics?.[String(c)] ?? meta?.heuristics?.[c];
-  if (!h) {
-    els.direNeeds.textContent = "—";
-    els.priorityQueue.textContent = "—";
-    return;
-  }
-
-  const priClass = (p) => (p || "").toLowerCase();
-  if (els.direNeeds) els.direNeeds.innerHTML = (h.needs ?? [])
-    .map((n) => {
-      const actions = (n.actions ?? []).map((a) => `<li>${a}</li>`).join("");
-      return `
-        <div class="needCard">
-          <div class="pill ${priClass(n.priority)}">${n.priority} · #${n.rank}</div>
-          <div class="needTitle">${n.title}</div>
-          <div class="needDesc">${n.desc}</div>
-          <ul class="smallNote" style="margin:0;padding-left:18px">${actions}</ul>
-        </div>
-      `;
-    })
-    .join("");
-
-  if (els.priorityQueue) els.priorityQueue.innerHTML = (h.queue ?? [])
-    .map(([num, action, why]) => {
-      return `
-        <div class="queueItem">
-          <div class="queueNum">${num}</div>
-          <div>
-            <div class="queueAction">${action}</div>
-            <div class="queueWhy">→ ${why}</div>
-          </div>
-        </div>
-      `;
-    })
-    .join("");
-}
-
-function setReportCluster(c) {
-  const v = String(c);
-  if (els.reportCluster) els.reportCluster.value = v;
-  renderSummary(v);
-  renderZChart(v);
-  renderHeuristics(v);
 }
 
 function rebuildLayer() {
@@ -415,7 +286,7 @@ function rebuildLayer() {
         `<div style="font-family: ui-sans-serif, system-ui; font-size:12px">
           <div><b>${p.grid_id ?? "grid"}</b></div>
           <div>${clusterName(p.cluster)}</div>
-          <div>Equity: ${Number.isFinite(Number(p.equity_score)) ? `${rawToPercent(Number(p.equity_score)).toFixed(1)}%` : "—"}</div>
+          <div>Equity: ${Number.isFinite(Number(p.equity_score)) ? `${rawToPercent(Number(p.equity_score))}%` : "—"}</div>
         </div>`,
         { sticky: true }
       );
@@ -450,9 +321,6 @@ async function init() {
     .sort((a, b) => a - b);
 
   renderLegend();
-  renderPca();
-  setReportCluster("0");
-
   rebuildLayer();
 }
 
@@ -466,10 +334,8 @@ els.colorMode.addEventListener("change", () => {
   if (selectedProps) setSelection(selectedProps);
 });
 els.clearSelection.addEventListener("click", () => clearSelection());
-els.reportCluster?.addEventListener("change", (e) => setReportCluster(e.target.value));
 
 init().catch((err) => {
   console.error(err);
   alert(`Failed to load dashboard data.\n\nError: ${String(err?.message || err)}\n\nStack: ${err?.stack ?? "n/a"}`);
 });
-

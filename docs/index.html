@@ -12,14 +12,13 @@
       crossorigin=""
     />
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   </head>
   <body>
     <header class="topbar">
       <div class="brand">
         <div class="title">Equity Dashboard</div>
-        <div class="subtitle">Map (Equity-first) → Cluster Report</div>
-        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-17 v6</div>
+        <div class="subtitle">Urban Service Equity — SF</div>
+        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-17 v7</div>
       </div>
 
       <div class="controls">
@@ -52,7 +51,6 @@
         </div>
 
         <button id="applyFilters" class="btn">Apply</button>
-        <a class="btn secondary" href="#report">Jump to report</a>
         <a class="btn secondary" href="./chat.html">Prompt Lab</a>
       </div>
     </header>
@@ -71,14 +69,14 @@
 
       <aside class="panel sidePanel">
         <div class="panelHeader">
-          <div class="panelTitle">Selection</div>
+          <div class="panelTitle" id="selPanelTitle">Selection</div>
           <div class="panelMeta">Click a point on the map</div>
         </div>
 
         <div id="selectionEmpty" class="emptyState">
           <div class="emptyTitle">No grid selected</div>
           <div class="emptyText">
-            Click a map point to see grid details and jump to the cluster report.
+            Click a map point to see its report.
           </div>
         </div>
 
@@ -103,8 +101,8 @@
               <div class="v" id="selClusterEquityMean">—</div>
             </div>
             <div class="kv">
-              <div class="k">Top features</div>
-              <div class="v" id="selClusterTop">—</div>
+              <div class="k">Top 3 distinct features</div>
+              <div class="v" id="selClusterTop" style="line-height:1.7">—</div>
             </div>
           </div>
 
@@ -115,103 +113,16 @@
               <div class="v" id="selEquity">—</div>
             </div>
             <div class="kv">
-              <div class="k">Top features</div>
-              <div class="v" id="selTop">—</div>
+              <div class="k">Top 3 distinct features</div>
+              <div class="v" id="selTop" style="line-height:1.7">—</div>
             </div>
           </div>
 
           <div class="actions">
-            <a id="clusterLink" class="btn" href="#report">View cluster report</a>
             <button id="clearSelection" class="btn secondary">Clear</button>
           </div>
         </div>
       </aside>
-    </main>
-
-    <main id="report" class="main reportMain">
-      <section class="panel">
-        <div class="panelHeader">
-          <div class="panelTitle">Cluster report</div>
-          <div class="panelMeta">Auto-updates when you click the map</div>
-        </div>
-
-        <div class="reportControls">
-          <div class="control">
-            <label for="reportCluster">Cluster</label>
-            <select id="reportCluster">
-              <option value="0">Cluster A</option>
-              <option value="1">Cluster B</option>
-              <option value="2">Cluster C</option>
-              <option value="3">Cluster D</option>
-            </select>
-          </div>
-        </div>
-
-        <div id="clusterName" class="reportTitle">—</div>
-
-        <div class="gridStats">
-          <div class="stat">
-            <div class="statLabel">Grid cells included</div>
-            <div class="statValue" id="statN">—</div>
-          </div>
-          <div class="stat">
-            <div class="statLabel">Equity mean</div>
-            <div class="statValue" id="statEquityMean">—</div>
-          </div>
-          <div class="stat">
-            <div class="statLabel">Top 3 distinct features</div>
-            <div class="statValue" id="statTop3" style="font-size:0.85em;line-height:1.5">—</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panelHeader">
-          <div class="panelTitle">Root causes (z-score vs city avg)</div>
-          <div class="panelMeta">Top 6 by absolute magnitude</div>
-        </div>
-        <p class="smallNote">
-          Positive bars = above city average, negative = below. This is the “why” behind the cluster archetype.
-        </p>
-        <div class="chartWrap">
-          <canvas id="zChart" height="170"></canvas>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panelHeader">
-          <div class="panelTitle">Dire needs & intervention queue</div>
-          <div class="panelMeta">From notebook heuristics</div>
-        </div>
-
-        <div class="split2">
-          <div>
-            <div class="label">Top 3 dire needs</div>
-            <div id="direNeeds" class="needsWrap">—</div>
-          </div>
-          <div>
-            <div class="label">Priority intervention queue</div>
-            <div id="priorityQueue" class="queueWrap">—</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panelHeader">
-          <div class="panelTitle">Model metadata (PCA weights)</div>
-          <div class="panelMeta">From <code>outputs/metadata.json</code></div>
-        </div>
-        <div class="split2">
-          <div>
-            <div class="label">Service performance weights</div>
-            <pre id="pcaS" class="codeBox">—</pre>
-          </div>
-          <div>
-            <div class="label">Service need weights</div>
-            <pre id="pcaN" class="codeBox">—</pre>
-          </div>
-        </div>
-      </section>
     </main>
 
     <script
@@ -222,4 +133,3 @@
     <script type="module" src="assets/app.js"></script>
   </body>
 </html>
-
