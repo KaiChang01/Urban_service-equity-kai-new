@@ -11,17 +11,30 @@ import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+import os
+
+_GDRIVE_CSV = "/content/drive/My Drive/243 Group 2/Module 2/data/merged_rent_311.csv"
+_LOCAL_CSV = "/Users/kylechang/Documents/Claude Projects/Urban-Service-Equity/merged_rent_311.csv"
+
+try:
+    from google.colab import drive
+    drive.mount('/content/drive')
+except ImportError:
+    pass
 
 
 # -----------------------------
 # Defaults (mirrors DB_MVP.ipynb)
 # -----------------------------
 
-# Primary data path (Google Colab + Drive). Override with --input or env MERGED_RENT_311_CSV.
-DEFAULT_INPUT_CSV = os.environ.get(
-    "MERGED_RENT_311_CSV",
-    "/content/drive/My Drive/243 Group 2/Module 2/data/merged_rent_311.csv",
-)
+def _resolve_default_csv() -> str:
+    if env := os.environ.get("MERGED_RENT_311_CSV"):
+        return env
+    if os.path.isfile(_GDRIVE_CSV):
+        return _GDRIVE_CSV
+    return _LOCAL_CSV
+
+DEFAULT_INPUT_CSV = _resolve_default_csv()
 
 CLUSTER_FEATURES_DEFAULT: List[str] = [
     "median_rent",  # Economic baseline
@@ -601,12 +614,16 @@ def main() -> None:
 
     input_path = args.input
     if not os.path.isfile(input_path):
-        raise FileNotFoundError(
-            f"Input CSV not found: {input_path!r}\n"
-            "  • On Colab: mount Drive and ensure the file exists at the default path, or pass --input.\n"
-            "  • Locally: pass your file explicitly, e.g. --input ./merged_rent_311.csv\n"
-            "  • Or set environment variable MERGED_RENT_311_CSV to the full path."
-        )
+        if input_path != _LOCAL_CSV and os.path.isfile(_LOCAL_CSV):
+            print(f"Google Drive path not accessible ({input_path!r}), falling back to local file.")
+            input_path = _LOCAL_CSV
+        else:
+            raise FileNotFoundError(
+                f"Input CSV not found: {input_path!r}\n"
+                "  • On Colab: mount Drive and ensure the file exists at the default path, or pass --input.\n"
+                "  • Locally: pass your file explicitly, e.g. --input ./merged_rent_311.csv\n"
+                "  • Or set environment variable MERGED_RENT_311_CSV to the full path."
+            )
 
     grid_df = load_and_aggregate_to_grid(input_path)
     df_clust, kmeans, scaler_c = run_kmeans(grid_df, cfg=cfg)
