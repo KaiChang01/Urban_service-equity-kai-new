@@ -1,0 +1,38 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Local secrets / env
+.env
+.env.*
+
+# Brainstorming mockups (visual companion)
+.superpowers/
+
+# Pipeline outputs (regenerate: python run_pipeline.py ...)
+/outputs/
+/outputs_full/
+# /docs/outputs/*
+!/docs/outputs/.gitkeep
+
+# Large input datasets (GitHub file limit ~100MB; use --input or MERGED_RENT_311_CSV)
+merged_rent_311.csv
