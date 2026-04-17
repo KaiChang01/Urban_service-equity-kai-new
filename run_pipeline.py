@@ -94,7 +94,6 @@ HEURISTICS_DEFAULT: Dict[int, dict] = {
                 "actions": [
                     "Conduct proactive inspections in rent-controlled units",
                     "Deploy predictive maintenance alerts for aging infrastructure",
-                    "Create landlord accountability portal for 311 requests",
                 ],
             },
             {
@@ -105,18 +104,6 @@ HEURISTICS_DEFAULT: Dict[int, dict] = {
                 "actions": [
                     "Expand multilingual tenant rights education and hotline",
                     "Partner with community orgs for confidential 311 submission",
-                    "Track displacement-correlated service gaps longitudinally",
-                ],
-            },
-            {
-                "rank": 3,
-                "priority": "MED",
-                "title": "Service Volume Equity Audit",
-                "desc": "Low 311 volume in high-rent areas may signal demand suppression, not satisfaction.",
-                "actions": [
-                    "Compare utilization vs. physical infrastructure condition",
-                    "Investigate service equity for low-income renters in high-rent zones",
-                    "Establish per-income-tier equity benchmarks within cluster",
                 ],
             },
         ],
@@ -130,11 +117,6 @@ HEURISTICS_DEFAULT: Dict[int, dict] = {
                 "02",
                 "Deploy multilingual 311 outreach in high-rent displacement corridors",
                 "Non-English speakers in high-rent zones are least likely to self-report.",
-            ),
-            (
-                "03",
-                "Cross-reference 311 gaps with housing court filings",
-                "Litigation spikes often precede 311 volume — early warning system.",
             ),
         ],
     },
@@ -150,7 +132,6 @@ HEURISTICS_DEFAULT: Dict[int, dict] = {
                 "actions": [
                     "Increase street sweeping frequency in high-density corridors",
                     "Install additional litter infrastructure at chokepoints",
-                    "Pilot automated cleaning notification via 311 app",
                 ],
             },
             {
@@ -161,18 +142,6 @@ HEURISTICS_DEFAULT: Dict[int, dict] = {
                 "actions": [
                     "Prioritize tree inventory audit in blocks with highest 311 tree requests",
                     "Establish community stewardship programs for green corridors",
-                    "Accelerate DPW tree trimming cycle from 10yr to 5yr target",
-                ],
-            },
-            {
-                "rank": 3,
-                "priority": "HIGH",
-                "title": "Housing Density Pressure Relief",
-                "desc": "High occupancy ratio suggests units may be over-occupied relative to capacity.",
-                "actions": [
-                    "Expand secondary unit permitting in under-utilized parcels",
-                    "Increase housing inspection capacity for overcrowding reports",
-                    "Target density relief through inclusionary infill housing pipeline",
                 ],
             },
         ],
@@ -186,11 +155,6 @@ HEURISTICS_DEFAULT: Dict[int, dict] = {
                 "02",
                 "Fast-track tree trimming in corridors with 3+ open requests",
                 "Deferred tree maintenance creates escalating liability and safety risk.",
-            ),
-            (
-                "03",
-                "Conduct housing overcrowding inspection sweep in flagged cells",
-                "High density + long occupancy duration = silent overcrowding growth.",
             ),
         ],
     },
@@ -206,7 +170,6 @@ HEURISTICS_DEFAULT: Dict[int, dict] = {
                 "actions": [
                     "Deploy dedicated service crew to this cell immediately",
                     "Triage 311 backlog by complaint age and recurrence frequency",
-                    "Assess if this cell is a routing anomaly or genuine hotspot",
                 ],
             },
             {
@@ -217,18 +180,6 @@ HEURISTICS_DEFAULT: Dict[int, dict] = {
                 "actions": [
                     "Immediate housing inspection referral",
                     "Cross-check building permits against occupancy data",
-                    "Engage community health workers for vulnerable resident outreach",
-                ],
-            },
-            {
-                "rank": 3,
-                "priority": "HIGH",
-                "title": "Public Space Access Deficit",
-                "desc": "Low positive service rate in high-density zone creates compounded livability pressure.",
-                "actions": [
-                    "Prioritize parklet or open space installation in adjacent blocks",
-                    "Increase sidewalk maintenance inspection frequency",
-                    "Establish community liaison for recurring public space issues",
                 ],
             },
         ],
@@ -242,11 +193,6 @@ HEURISTICS_DEFAULT: Dict[int, dict] = {
                 "02",
                 "Deploy housing inspector and community health worker jointly",
                 "Co-deployment reduces duplicate visits and builds resident trust.",
-            ),
-            (
-                "03",
-                "Escalate to supervisor district for emergency resource allocation",
-                "Single-cell anomaly at this scale warrants political escalation.",
             ),
         ],
     },
@@ -262,7 +208,6 @@ HEURISTICS_DEFAULT: Dict[int, dict] = {
                 "actions": [
                     "Audit all open 311 tickets in this cluster older than 30 days",
                     "Assign dedicated case manager to chronic unresolved complaints",
-                    "Auto-escalate any ticket open more than 14 days",
                 ],
             },
             {
@@ -273,18 +218,6 @@ HEURISTICS_DEFAULT: Dict[int, dict] = {
                 "actions": [
                     "Coordinate HSOC and DPW joint sweeps with rehousing referrals",
                     "Deploy graffiti abatement within 48h of report",
-                    "Establish abandoned vehicle fast-track tow program",
-                ],
-            },
-            {
-                "rank": 3,
-                "priority": "MED",
-                "title": "Systemic Service Routing Reform",
-                "desc": "Slow resolution often caused by inter-agency routing inefficiencies.",
-                "actions": [
-                    "Audit 311 routing logs for inter-agency handoff failures",
-                    "Implement case ownership accountability by supervisor district",
-                    "Create resolution SLA dashboard visible to department heads",
                 ],
             },
         ],
@@ -298,11 +231,6 @@ HEURISTICS_DEFAULT: Dict[int, dict] = {
                 "02",
                 "Joint HSOC + DPW deployment for encampment clearance with rehousing",
                 "Co-deployment with rehousing prevents cycling; clearance alone does not.",
-            ),
-            (
-                "03",
-                "Implement 14-day auto-escalation rule for all Cluster D tickets",
-                "Without structural escalation triggers, chronic delays persist indefinitely.",
             ),
         ],
     },

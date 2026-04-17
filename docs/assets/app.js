@@ -35,7 +35,9 @@ const els = {
   statPerf: document.getElementById("statPerf"),
   statNeed: document.getElementById("statNeed"),
   direNeeds: document.getElementById("direNeeds"),
+  direNeedsLabel: document.getElementById("direNeedsLabel"),
   priorityQueue: document.getElementById("priorityQueue"),
+  heuristicsMeta: document.getElementById("heuristicsMeta"),
   pcaS: document.getElementById("pcaS"),
   pcaN: document.getElementById("pcaN"),
 };
@@ -202,8 +204,9 @@ function setSelection(props) {
   els.selTop.textContent = props.top3_features ?? "—";
   els.clusterLink.href = `#report`;
 
-  // Update report to this cluster and scroll down
+  // Update cluster stats/z-chart then override needs with cell-specific equity view
   setReportCluster(props.cluster);
+  renderEquityHeuristics(props);
   setTimeout(() => {
     els.reportAnchor?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, 0);
@@ -285,16 +288,9 @@ function renderZChart(c) {
   });
 }
 
-function renderHeuristics(c) {
-  const h = meta?.heuristics?.[String(c)] ?? meta?.heuristics?.[c];
-  if (!h) {
-    els.direNeeds.textContent = "—";
-    els.priorityQueue.textContent = "—";
-    return;
-  }
-
+function renderNeedsAndQueue(needs, queue) {
   const priClass = (p) => (p || "").toLowerCase();
-  els.direNeeds.innerHTML = (h.needs ?? [])
+  els.direNeeds.innerHTML = needs
     .map((n) => {
       const actions = (n.actions ?? []).map((a) => `<li>${a}</li>`).join("");
       return `
@@ -308,19 +304,96 @@ function renderHeuristics(c) {
     })
     .join("");
 
-  els.priorityQueue.innerHTML = (h.queue ?? [])
-    .map(([num, action, why]) => {
-      return `
-        <div class="queueItem">
-          <div class="queueNum">${num}</div>
-          <div>
-            <div class="queueAction">${action}</div>
-            <div class="queueWhy">→ ${why}</div>
-          </div>
+  els.priorityQueue.innerHTML = queue
+    .map(([num, action, why]) => `
+      <div class="queueItem">
+        <div class="queueNum">${num}</div>
+        <div>
+          <div class="queueAction">${action}</div>
+          <div class="queueWhy">→ ${why}</div>
         </div>
-      `;
-    })
+      </div>
+    `)
     .join("");
+}
+
+function renderHeuristics(c) {
+  const h = meta?.heuristics?.[String(c)] ?? meta?.heuristics?.[c];
+  if (!h) {
+    els.direNeeds.textContent = "—";
+    els.priorityQueue.textContent = "—";
+    return;
+  }
+  if (els.heuristicsMeta) els.heuristicsMeta.textContent = "Cluster archetype · From notebook heuristics";
+  if (els.direNeedsLabel) els.direNeedsLabel.textContent = "Dire needs";
+  renderNeedsAndQueue(h.needs ?? [], h.queue ?? []);
+}
+
+function renderEquityHeuristics(props) {
+  const equity = Number(props.equity_score);
+  const perf = Number(props.performance_score);
+  const need = Number(props.need_score);
+  const top3 = (props.top3_features ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+
+  const perfPriority = !Number.isFinite(perf) || perf < 30 ? "CRITICAL" : perf < 50 ? "HIGH" : "MED";
+  const needPriority = !Number.isFinite(need) || need > 70 ? "CRITICAL" : need > 50 ? "HIGH" : "MED";
+  const perfVal = Number.isFinite(perf) ? perf.toFixed(1) : "—";
+  const needVal = Number.isFinite(need) ? need.toFixed(1) : "—";
+  const eqVal = Number.isFinite(equity) ? equity.toFixed(1) : "—";
+
+  const needs = [
+    {
+      rank: 1,
+      priority: perfPriority,
+      title: perf < 50 ? "Service Performance Deficit" : "Performance Monitoring Required",
+      desc: perf < 50
+        ? `Performance score of ${perfVal} indicates inadequate service delivery at this location.`
+        : `Performance score of ${perfVal} is adequate, but equity score of ${eqVal} signals structural disparity.`,
+      actions: perf < 50
+        ? [
+            "Audit 311 response times and resolution rates for this grid cell",
+            "Identify routing or staffing gaps driving performance lag",
+          ]
+        : [
+            "Monitor service delivery consistency across demographic sub-groups",
+            "Review service access barriers not captured by 311 volume",
+          ],
+    },
+    {
+      rank: 2,
+      priority: needPriority,
+      title: need > 50 ? "High Unmet Service Demand" : "Latent Demand Assessment",
+      desc: need > 50
+        ? `Need score of ${needVal} signals elevated structural demand outpacing current service capacity.`
+        : `Need score of ${needVal} is moderate. Equity score of ${eqVal} warrants proactive demand review.`,
+      actions: need > 50
+        ? [
+            "Prioritize resource allocation for this cell in next planning cycle",
+            "Deploy targeted outreach to close gap between demand and service",
+          ]
+        : [
+            "Conduct resident survey to surface under-reported service needs",
+            "Cross-reference service requests with infrastructure condition data",
+          ],
+    },
+  ];
+
+  const featureLabel = (f) => INDICATOR_LABELS[f] ?? f.replace(/_/g, " ");
+  const queue = [];
+  if (top3[0]) {
+    queue.push(["01", `Target equity driver: ${featureLabel(top3[0])}`, "Top feature driving cluster equity gap — highest leverage for score improvement."]);
+  } else {
+    queue.push(["01", "Conduct comprehensive equity audit for this grid cell", `Equity score of ${eqVal} — identify primary driver of disparity.`]);
+  }
+  if (top3[1]) {
+    queue.push(["02", `Address secondary driver: ${featureLabel(top3[1])}`, "Compound improvement by targeting second equity gap alongside primary action."]);
+  } else {
+    queue.push(["02", "Engage community for targeted service feedback", "Cell-level resident input surfaces invisible service gaps."]);
+  }
+
+  if (els.heuristicsMeta) els.heuristicsMeta.textContent = `Cell ${props.grid_id ?? ""} · Tailored to equity score`;
+  if (els.direNeedsLabel) els.direNeedsLabel.textContent = "Cell equity needs";
+  renderNeedsAndQueue(needs, queue);
 }
 
 function setReportCluster(c) {
