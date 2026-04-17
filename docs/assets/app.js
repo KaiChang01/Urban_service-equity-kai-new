@@ -1,5 +1,8 @@
 import { CLUSTER_COLORS, equityColor, clamp, INDICATOR_LABELS, fmt } from "./utils.js";
 
+const MODE_CLUSTER = "cluster";
+const MODE_EQUITY = "equity";
+
 const DATA_BASE = new URL("../outputs/", import.meta.url);
 const DATA_GEOJSON = new URL("grid_points.geojson", DATA_BASE).href;
 const DATA_META = new URL("metadata.json", DATA_BASE).href;
@@ -151,7 +154,7 @@ function formatTop3(zRow) {
 
 function markerStyle(props) {
   const mode = els.colorMode.value;
-  if (mode === "cluster") {
+  if (mode === MODE_CLUSTER) {
     return { color: CLUSTER_COLORS[props.cluster] ?? "#888", fillColor: CLUSTER_COLORS[props.cluster] ?? "#888" };
   }
   const pct = rawToPercent(Number(props.equity_score));
@@ -207,7 +210,7 @@ function renderEquityHistogram() {
 
 function renderLegend() {
   const mode = els.colorMode.value;
-  if (mode === "cluster") {
+  if (mode === MODE_CLUSTER) {
     els.legend.innerHTML = `
       <div class="legendTitle">Legend: Cluster</div>
       ${[0, 1, 2, 3].map((c) => `
@@ -243,7 +246,7 @@ function setSelection(props) {
   const mode = els.colorMode.value;
   const zRow = zRows.find((r) => String(r.cluster) === String(props.cluster));
 
-  if (mode === "cluster") {
+  if (mode === MODE_CLUSTER) {
     if (els.selPanelTitle) els.selPanelTitle.textContent = "Cluster Report";
     els.selClusterSection.classList.remove("hidden");
     els.selEquitySection.classList.add("hidden");
@@ -361,14 +364,14 @@ function renderHeuristics(c) {
     if (els.priorityQueue) els.priorityQueue.textContent = "—";
     return;
   }
-  const priClass = (p) => (p || "").toLowerCase();
-  if (els.direNeeds) els.direNeeds.innerHTML = (h.needs ?? []).map((n) => {
-    const actions = (n.actions ?? []).map((a) => `<li>${a}</li>`).join("");
-    return `<div class="needCard"><div class="pill ${priClass(n.priority)}">${n.priority} · #${n.rank}</div><div class="needTitle">${n.title}</div><div class="needDesc">${n.desc}</div><ul class="smallNote" style="margin:0;padding-left:18px">${actions}</ul></div>`;
-  }).join("");
-  if (els.priorityQueue) els.priorityQueue.innerHTML = (h.queue ?? []).map(([num, action, why]) =>
-    `<div class="queueItem"><div class="queueNum">${num}</div><div><div class="queueAction">${action}</div><div class="queueWhy">→ ${why}</div></div></div>`
-  ).join("");
+  const needs = h.needs ?? [];
+  if (els.direNeeds) els.direNeeds.innerHTML = needs.map((n) =>
+    `<div class="needCard"><div class="needTitle">${n.title}</div><div class="needDesc">${n.desc}</div></div>`
+  ).join("") || "—";
+  const allActions = needs.flatMap((n) => n.actions ?? []);
+  if (els.priorityQueue) els.priorityQueue.innerHTML = allActions.map((a) =>
+    `<div class="queueItem"><div class="queueAction">${a}</div></div>`
+  ).join("") || "—";
 }
 
 function setReportCluster(c) {

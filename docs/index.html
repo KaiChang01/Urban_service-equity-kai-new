@@ -19,7 +19,7 @@
       <div class="brand">
         <div class="title">Equity Dashboard</div>
         <div class="subtitle">Urban Service Equity — SF</div>
-        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-17 v9</div>
+        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-17 v10</div>
       </div>
 
       <div class="controls">
@@ -129,8 +129,8 @@
     <main id="report" class="main reportMain">
       <section class="panel">
         <div class="panelHeader">
-          <div class="panelTitle">Root causes (z-score vs city avg)</div>
-          <div class="panelMeta">How this cluster differs from the SF average — all features</div>
+          <div class="panelTitle">Needs and Intervention</div>
+          <div class="panelMeta">From notebook heuristics</div>
         </div>
 
         <div class="reportControls">
@@ -145,28 +145,28 @@
           </div>
         </div>
 
-        <p class="smallNote">
-          Green = above city average &nbsp;·&nbsp; Red = below city average &nbsp;·&nbsp; White line = city average (0)
-        </p>
-        <div class="chartWrap">
-          <canvas id="zChart" height="260"></canvas>
+        <div class="split2">
+          <div>
+            <div class="label">Needs</div>
+            <div id="direNeeds" class="needsWrap">—</div>
+          </div>
+          <div>
+            <div class="label">Interventions</div>
+            <div id="priorityQueue" class="queueWrap">—</div>
+          </div>
         </div>
       </section>
 
       <section class="panel">
         <div class="panelHeader">
-          <div class="panelTitle">Dire needs &amp; intervention queue</div>
-          <div class="panelMeta">From notebook heuristics</div>
+          <div class="panelTitle">Root causes (z-score vs city avg)</div>
+          <div class="panelMeta">How this cluster differs from the SF average — all features</div>
         </div>
-        <div class="split2">
-          <div>
-            <div class="label">Top 3 dire needs</div>
-            <div id="direNeeds" class="needsWrap">—</div>
-          </div>
-          <div>
-            <div class="label">Priority intervention queue</div>
-            <div id="priorityQueue" class="queueWrap">—</div>
-          </div>
+        <p class="smallNote">
+          Green = above city average &nbsp;·&nbsp; Red = below city average &nbsp;·&nbsp; White line = city average (0)
+        </p>
+        <div class="chartWrap">
+          <canvas id="zChart" height="260"></canvas>
         </div>
       </section>
     </main>
