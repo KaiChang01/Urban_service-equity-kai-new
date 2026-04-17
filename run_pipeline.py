@@ -500,9 +500,8 @@ def compute_equity_scores(df_eq: pd.DataFrame) -> Tuple[pd.DataFrame, dict]:
     )
 
     df_eq["raw_equity"] = df_eq["performance_score"] / (df_eq["need_score"] + 1e-6)
-    log_idx = np.log1p(df_eq["raw_equity"])
-    upper = np.percentile(log_idx, 99)
-    clipped = np.clip(log_idx, log_idx.min(), upper)
+    upper = np.percentile(df_eq["raw_equity"], 99)
+    clipped = np.clip(df_eq["raw_equity"], df_eq["raw_equity"].min(), upper)
     df_eq["equity_score"] = ((clipped - clipped.min()) / (clipped.max() - clipped.min() + 1e-6)) * 100.0
 
     meta = {
