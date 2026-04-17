@@ -19,7 +19,7 @@
       <div class="brand">
         <div class="title">Equity Dashboard</div>
         <div class="subtitle">Urban Service Equity — SF</div>
-        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-17 v8</div>
+        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-17 v9</div>
       </div>
 
       <div class="controls">
@@ -113,10 +113,6 @@
               <div class="v" id="selEquity">—</div>
             </div>
             <div class="kv">
-              <div class="k">Equity score percentile</div>
-              <div class="v" id="selEquityPct">—</div>
-            </div>
-            <div class="kv">
               <div class="k">Top 3 distinct features</div>
               <div class="v" id="selTop" style="line-height:1.8">—</div>
             </div>
@@ -133,8 +129,8 @@
     <main id="report" class="main reportMain">
       <section class="panel">
         <div class="panelHeader">
-          <div class="panelTitle">Cluster report</div>
-          <div class="panelMeta">Auto-updates when you click the map</div>
+          <div class="panelTitle">Root causes (z-score vs city avg)</div>
+          <div class="panelMeta">How this cluster differs from the SF average — all features</div>
         </div>
 
         <div class="reportControls">
@@ -149,34 +145,11 @@
           </div>
         </div>
 
-        <div id="clusterName" class="reportTitle">—</div>
-
-        <div class="gridStats">
-          <div class="stat">
-            <div class="statLabel">Grid cells included</div>
-            <div class="statValue" id="statN">—</div>
-          </div>
-          <div class="stat">
-            <div class="statLabel">Equity Score mean</div>
-            <div class="statValue" id="statEquityMean">—</div>
-          </div>
-          <div class="stat">
-            <div class="statLabel">Top 3 distinct features</div>
-            <div class="statValue" id="statTop3" style="font-size:0.85em;line-height:1.8">—</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panelHeader">
-          <div class="panelTitle">Root causes (z-score vs city avg)</div>
-          <div class="panelMeta">Top 6 by absolute magnitude</div>
-        </div>
         <p class="smallNote">
-          Positive bars = above city average, negative = below. This is the "why" behind the cluster archetype.
+          Green = above city average &nbsp;·&nbsp; Red = below city average &nbsp;·&nbsp; White line = city average (0)
         </p>
         <div class="chartWrap">
-          <canvas id="zChart" height="170"></canvas>
+          <canvas id="zChart" height="260"></canvas>
         </div>
       </section>
 
@@ -193,23 +166,6 @@
           <div>
             <div class="label">Priority intervention queue</div>
             <div id="priorityQueue" class="queueWrap">—</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panelHeader">
-          <div class="panelTitle">Model metadata (PCA weights)</div>
-          <div class="panelMeta">From <code>outputs/metadata.json</code></div>
-        </div>
-        <div class="split2">
-          <div>
-            <div class="label">Service performance weights</div>
-            <pre id="pcaS" class="codeBox">—</pre>
-          </div>
-          <div>
-            <div class="label">Service need weights</div>
-            <pre id="pcaN" class="codeBox">—</pre>
           </div>
         </div>
       </section>

@@ -28,20 +28,13 @@ const els = {
   // equity mode side panel
   selEquitySection: document.getElementById("selEquitySection"),
   selEquity: document.getElementById("selEquity"),
-  selEquityPct: document.getElementById("selEquityPct"),
   selTop: document.getElementById("selTop"),
   clearSelection: document.getElementById("clearSelection"),
-  // bottom cluster report section
+  // bottom report section
   reportCluster: document.getElementById("reportCluster"),
   reportAnchor: document.getElementById("report"),
-  clusterName: document.getElementById("clusterName"),
-  statN: document.getElementById("statN"),
-  statEquityMean: document.getElementById("statEquityMean"),
-  statTop3: document.getElementById("statTop3"),
   direNeeds: document.getElementById("direNeeds"),
   priorityQueue: document.getElementById("priorityQueue"),
-  pcaS: document.getElementById("pcaS"),
-  pcaN: document.getElementById("pcaN"),
 };
 
 els.dataPath.textContent = "outputs/grid_points.geojson";
@@ -56,6 +49,50 @@ let zChart = null;
 let selectedProps = null;
 const EQUITY_HIST_BINS_MAX = 10;
 let sortedScores = [];
+
+// Chart.js inline plugins
+const zeroLinePlugin = {
+  id: "zeroLine",
+  afterDraw(chart) {
+    const { ctx, scales: { x, y } } = chart;
+    const xPos = x.getPixelForValue(0);
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(xPos, y.top);
+    ctx.lineTo(xPos, y.bottom);
+    ctx.strokeStyle = "rgba(255,255,255,0.7)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+  },
+};
+
+const barValuePlugin = {
+  id: "barValue",
+  afterDatasetsDraw(chart) {
+    const { ctx, scales: { x } } = chart;
+    const zero = x.getPixelForValue(0);
+    chart.data.datasets.forEach((dataset, i) => {
+      chart.getDatasetMeta(i).data.forEach((bar, index) => {
+        const value = dataset.data[index];
+        if (value === undefined || value === null) return;
+        const label = `${value >= 0 ? "+" : ""}${value.toFixed(2)}`;
+        ctx.save();
+        ctx.fillStyle = "rgba(232,234,240,0.9)";
+        ctx.font = "bold 10px ui-sans-serif,system-ui,sans-serif";
+        ctx.textBaseline = "middle";
+        if (value >= 0) {
+          ctx.textAlign = "left";
+          ctx.fillText(label, Math.max(bar.x, zero) + 4, bar.y);
+        } else {
+          ctx.textAlign = "right";
+          ctx.fillText(label, Math.min(bar.x, zero) - 4, bar.y);
+        }
+        ctx.restore();
+      });
+    });
+  },
+};
 
 function clusterName(c) {
   if (!meta?.config?.cluster_names) return `Cluster ${c}`;
@@ -79,8 +116,7 @@ function selectedEquityRange() {
 }
 
 function histogramBinsForSpan(span) {
-  const bySpan = Math.round(span * 2);
-  return Math.max(4, Math.min(EQUITY_HIST_BINS_MAX, bySpan));
+  return Math.max(4, Math.min(EQUITY_HIST_BINS_MAX, Math.round(span * 2)));
 }
 
 function fmtBinEdge(v, span) {
@@ -91,7 +127,7 @@ function fmtBinEdge(v, span) {
 
 function rawToPercent(score) {
   const n = sortedScores.length;
-  if (!n) return 0;
+  if (!n || !Number.isFinite(score)) return null;
   let lo = 0, hi = n;
   while (lo < hi) {
     const mid = (lo + hi) >> 1;
@@ -118,11 +154,10 @@ function markerStyle(props) {
   if (mode === "cluster") {
     return { color: CLUSTER_COLORS[props.cluster] ?? "#888", fillColor: CLUSTER_COLORS[props.cluster] ?? "#888" };
   }
-  const eq = Number(props.equity_score);
-  const pct = rawToPercent(eq);
+  const pct = rawToPercent(Number(props.equity_score));
   const [emin, emax] = selectedEquityRange();
   const span = Math.max(1e-9, emax - emin);
-  const c = equityColor(clamp((pct - emin) / span, 0, 1));
+  const c = equityColor(clamp(((pct ?? 0) - emin) / span, 0, 1));
   return { color: c, fillColor: c };
 }
 
@@ -132,7 +167,7 @@ function getEquityHistogram(features, rangeMin, rangeMax, bins = EQUITY_HIST_BIN
   const span = Math.max(1e-9, rangeMax - rangeMin);
   for (const feature of features ?? []) {
     const score = rawToPercent(Number(feature?.properties?.equity_score));
-    if (!Number.isFinite(score)) continue;
+    if (score === null) continue;
     if (score < rangeMin || score > rangeMax) continue;
     const idx = Math.min(bins - 1, Math.floor(((score - rangeMin) / span) * bins));
     counts[idx] += 1;
@@ -228,8 +263,10 @@ function setSelection(props) {
     els.selEquitySection.classList.remove("hidden");
 
     const raw = Number(props.equity_score);
-    els.selEquity.textContent = Number.isFinite(raw) ? raw.toFixed(2) : "—";
-    els.selEquityPct.textContent = Number.isFinite(raw) ? `${rawToPercent(raw)}%` : "—";
+    const pct = rawToPercent(raw);
+    els.selEquity.textContent = Number.isFinite(raw)
+      ? `${raw.toFixed(2)}${pct !== null ? ` (${pct}th pctile)` : ""}`
+      : "—";
     els.selTop.innerHTML = formatTop3(zRow);
   }
 }
@@ -250,48 +287,68 @@ function parseCsv(url) {
   });
 }
 
-function renderPca() {
-  const p = meta?.pca_weights?.service_performance ?? {};
-  const n = meta?.pca_weights?.service_need ?? {};
-  if (els.pcaS) els.pcaS.textContent = JSON.stringify(p, null, 2);
-  if (els.pcaN) els.pcaN.textContent = JSON.stringify(n, null, 2);
-}
-
-function renderSummary(c) {
-  const row = summaryRows.find((r) => String(r.cluster) === String(c));
-  if (els.clusterName) els.clusterName.textContent = clusterName(c);
-  if (!row) return;
-  if (els.statN) els.statN.textContent = row.n_grids_scored?.toLocaleString?.() ?? String(row.n_grids_scored ?? "—");
-  if (els.statEquityMean) els.statEquityMean.textContent = fmt(row.equity_mean, 2);
-  const zRow = zRows.find((r) => String(r.cluster) === String(c));
-  if (els.statTop3) els.statTop3.innerHTML = formatTop3(zRow);
-}
-
 function renderZChart(c) {
   const row = zRows.find((r) => String(r.cluster) === String(c));
   if (!row) return;
+
+  // All features sorted ascending (chart renders bottom-to-top, so most negative appears at top)
   const items = Object.keys(row)
     .filter((k) => k !== "cluster" && row[k] !== null && row[k] !== undefined && !Number.isNaN(row[k]))
     .map((k) => ({ k, z: Number(row[k]) }))
-    .sort((a, b) => Math.abs(b.z) - Math.abs(a.z))
-    .slice(0, 6)
-    .reverse();
+    .filter((d) => Number.isFinite(d.z))
+    .sort((a, b) => a.z - b.z);
+
   const labels = items.map((d) => INDICATOR_LABELS[d.k] ?? d.k);
   const data = items.map((d) => d.z);
-  const colors = items.map((d) => (d.z >= 0 ? "rgba(34,197,94,.65)" : "rgba(239,68,68,.65)"));
+  const colors = items.map((d) => (d.z >= 0 ? "rgba(34,197,94,.55)" : "rgba(239,68,68,.55)"));
   const borders = items.map((d) => (d.z >= 0 ? "rgba(34,197,94,1)" : "rgba(239,68,68,1)"));
+
   const ctx = document.getElementById("zChart");
   if (!ctx) return;
   if (zChart) zChart.destroy();
   zChart = new Chart(ctx, {
     type: "bar",
-    data: { labels, datasets: [{ label: "z-score", data, backgroundColor: colors, borderColor: borders, borderWidth: 1 }] },
+    plugins: [zeroLinePlugin, barValuePlugin],
+    data: {
+      labels,
+      datasets: [{
+        label: "z-score vs city avg",
+        data,
+        backgroundColor: colors,
+        borderColor: borders,
+        borderWidth: 1,
+        borderRadius: 3,
+      }],
+    },
     options: {
-      indexAxis: "y", responsive: true,
-      plugins: { legend: { display: false } },
+      indexAxis: "y",
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: (items) => items[0].label,
+            label: (item) => {
+              const v = item.parsed.x;
+              const dir = v >= 0 ? "above" : "below";
+              return ` ${v >= 0 ? "+" : ""}${v.toFixed(3)} σ ${dir} city average`;
+            },
+          },
+        },
+      },
       scales: {
-        x: { grid: { color: "rgba(255,255,255,.06)" }, ticks: { color: "rgba(232,234,240,.75)" } },
-        y: { grid: { display: false }, ticks: { color: "rgba(232,234,240,.85)" } },
+        x: {
+          grid: { color: "rgba(255,255,255,.08)" },
+          ticks: {
+            color: "rgba(232,234,240,.75)",
+            callback: (v) => `${v >= 0 ? "+" : ""}${v.toFixed(1)}σ`,
+          },
+          title: { display: true, text: "Standard deviations from city average", color: "rgba(232,234,240,.5)", font: { size: 11 } },
+        },
+        y: {
+          grid: { display: false },
+          ticks: { color: "rgba(232,234,240,.9)", font: { size: 11 } },
+        },
       },
     },
   });
@@ -317,7 +374,6 @@ function renderHeuristics(c) {
 function setReportCluster(c) {
   const v = String(c);
   if (els.reportCluster) els.reportCluster.value = v;
-  renderSummary(v);
   renderZChart(v);
   renderHeuristics(v);
 }
@@ -334,12 +390,13 @@ function rebuildLayer() {
     },
     onEachFeature: (feature, l) => {
       const p = feature.properties ?? {};
+      const pct = rawToPercent(Number(p.equity_score));
       l.on("click", () => setSelection(p));
       l.bindTooltip(
         `<div style="font-family:ui-sans-serif,system-ui;font-size:12px">
           <div><b>${p.grid_id ?? "grid"}</b></div>
           <div>${clusterName(p.cluster)}</div>
-          <div>Equity: ${Number.isFinite(Number(p.equity_score)) ? `${rawToPercent(Number(p.equity_score))}%` : "—"}</div>
+          <div>Equity: ${pct !== null ? `${pct}th pctile` : "—"}</div>
         </div>`,
         { sticky: true }
       );
@@ -359,9 +416,11 @@ async function init() {
     fetchJson(DATA_META), fetchJson(DATA_GEOJSON), parseCsv(DATA_SUMMARY), parseCsv(DATA_Z),
   ]);
   meta = m; geo = g; summaryRows = summary; zRows = z;
-  sortedScores = geo.features.map((f) => Number(f.properties?.equity_score)).filter(Number.isFinite).sort((a, b) => a - b);
+  sortedScores = geo.features
+    .map((f) => Number(f.properties?.equity_score))
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
   renderLegend();
-  renderPca();
   setReportCluster("0");
   rebuildLayer();
 }
