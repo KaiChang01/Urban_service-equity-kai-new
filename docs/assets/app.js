@@ -47,8 +47,7 @@ let summaryRows = [];
 let zRows = [];
 let zChart = null;
 const EQUITY_HIST_BINS_MAX = 10;
-let globalEquityMin = 0;
-let globalEquityMax = 100;
+let sortedScores = []; // ascending-sorted raw equity scores for percentile ranking
 
 function clusterName(c) {
   if (!meta?.config?.cluster_names) return `Cluster ${c}`;
@@ -87,8 +86,17 @@ function fmtBinEdge(v, span) {
 }
 
 function rawToPercent(score) {
-  const span = Math.max(1e-9, globalEquityMax - globalEquityMin);
-  return clamp(((score - globalEquityMin) / span) * 100, 0, 100);
+  const n = sortedScores.length;
+  if (!n) return 0;
+  // binary search: find first index where sortedScores[i] >= score
+  let lo = 0, hi = n;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (sortedScores[mid] < score) lo = mid + 1;
+    else hi = mid;
+  }
+  // lo/n gives rank fraction; floor to integer percentile 0–99
+  return Math.min(99, Math.floor((lo / n) * 100));
 }
 
 function markerStyle(props) {
@@ -397,11 +405,10 @@ async function init() {
   summaryRows = summary;
   zRows = z;
 
-  const scores = geo.features.map((f) => Number(f.properties?.equity_score)).filter(Number.isFinite);
-  if (scores.length) {
-    globalEquityMin = scores.reduce((a, b) => Math.min(a, b), Infinity);
-    globalEquityMax = scores.reduce((a, b) => Math.max(a, b), -Infinity);
-  }
+  sortedScores = geo.features
+    .map((f) => Number(f.properties?.equity_score))
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
 
   renderLegend();
   renderPca();
