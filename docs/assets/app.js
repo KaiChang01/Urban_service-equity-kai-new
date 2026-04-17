@@ -256,7 +256,7 @@ function renderSummary(c) {
       .slice(0, 3)
       .map((d) => `${INDICATOR_LABELS[d.k] ?? d.k} (${d.z > 0 ? "+" : ""}${d.z.toFixed(2)})`)
       .join("<br>");
-    els.statTop3.innerHTML = top3 || "—";
+    if (els.statTop3) els.statTop3.innerHTML = top3 || "—";
   }
 }
 
@@ -307,7 +307,7 @@ function renderHeuristics(c) {
   }
 
   const priClass = (p) => (p || "").toLowerCase();
-  els.direNeeds.innerHTML = (h.needs ?? [])
+  if (els.direNeeds) els.direNeeds.innerHTML = (h.needs ?? [])
     .map((n) => {
       const actions = (n.actions ?? []).map((a) => `<li>${a}</li>`).join("");
       return `
@@ -321,7 +321,7 @@ function renderHeuristics(c) {
     })
     .join("");
 
-  els.priorityQueue.innerHTML = (h.queue ?? [])
+  if (els.priorityQueue) els.priorityQueue.innerHTML = (h.queue ?? [])
     .map(([num, action, why]) => {
       return `
         <div class="queueItem">
@@ -399,8 +399,8 @@ async function init() {
 
   const scores = geo.features.map((f) => Number(f.properties?.equity_score)).filter(Number.isFinite);
   if (scores.length) {
-    globalEquityMin = Math.min(...scores);
-    globalEquityMax = Math.max(...scores);
+    globalEquityMin = scores.reduce((a, b) => Math.min(a, b), Infinity);
+    globalEquityMax = scores.reduce((a, b) => Math.max(a, b), -Infinity);
   }
 
   renderLegend();
@@ -423,10 +423,6 @@ els.reportCluster?.addEventListener("change", (e) => setReportCluster(e.target.v
 
 init().catch((err) => {
   console.error(err);
-  alert(
-    `Failed to load dashboard data.\n\n${String(err?.message || err)}\n\n` +
-      "If you opened this as a file, run: python -m http.server 5173 --directory docs\n" +
-      "Ensure docs/outputs contains the pipeline files (run run_pipeline.py --output-dir docs/outputs)."
-  );
+  alert(`Failed to load dashboard data.\n\nError: ${String(err?.message || err)}\n\nStack: ${err?.stack ?? "n/a"}`);
 });
 
