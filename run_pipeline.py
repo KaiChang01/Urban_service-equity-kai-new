@@ -81,228 +81,261 @@ CLUSTER_NAMES_DEFAULT: Dict[int, str] = {
 }
 
 # Heuristic archetypes (mirrors DB_MVP.ipynb Cell 10)
+#
+# Each cluster's intervention plan is structured so every recommendation is
+# concrete enough to assign tomorrow:
+#   • title   — <=5 words, action-led
+#   • desc    — one sentence tying the fix to the observed data signal
+#   • actions — <=14 words each, naming the lead agency + threshold/timeframe
+#   • owner   — single accountable department
+#   • kpi     — one measurable success metric
+# The queue is a 30/60/90-day sprint: (day, action, rationale).
 HEURISTICS_DEFAULT: Dict[int, dict] = {
     0: {
         "archetype": "High-Rent, Low Service Volume",
-        "signal": "Newer stock + lower 311 demand — may mask under-reporting by renters",
+        "signal": "Low 311 volume in high-rent zones — under-reporting, not satisfaction",
         "needs": [
             {
                 "rank": 1,
                 "priority": "HIGH",
-                "title": "Proactive Property Maintenance Outreach",
-                "desc": "High rent + low service volume may mask deferred maintenance or tenant reluctance to report.",
+                "title": "Surface hidden maintenance gaps",
+                "desc": "High rent and aging stock with a thin 311 signal suggests tenants fear retaliation more than they lack issues.",
+                "owner": "DBI",
+                "kpi": "+25% habitability complaints from rent-controlled units within 6 months (reporting uplift is success)",
                 "actions": [
-                    "Conduct proactive inspections in rent-controlled units",
-                    "Deploy predictive maintenance alerts for aging infrastructure",
-                    "Create landlord accountability portal for 311 requests",
+                    "DBI: annual proactive habitability inspection for rent-controlled buildings 40+ years old",
+                    "Publish a landlord-level 311 scorecard on DataSF, refreshed monthly",
+                    "Open an anonymous 311 channel through 211 and community orgs",
                 ],
             },
             {
                 "rank": 2,
                 "priority": "HIGH",
-                "title": "Affordability & Displacement Prevention",
-                "desc": "High rent with moderate service response. Residents may under-report fearing eviction.",
+                "title": "Protect reporters from retaliation",
+                "desc": "High rent and low volume track the displacement corridor — residents trade service for tenancy.",
+                "owner": "Rent Board + MOHCD",
+                "kpi": "Zero cases where tenant identity is disclosed to landlord; 90% outreach coverage in top displacement ZIPs",
                 "actions": [
-                    "Expand multilingual tenant rights education and hotline",
-                    "Partner with community orgs for confidential 311 submission",
-                    "Track displacement-correlated service gaps longitudinally",
+                    "Fund multilingual Tenants' Rights outreach in top-10 displacement ZIPs (Cantonese, Spanish, Tagalog, Russian)",
+                    "Require 311 supervisors to seal case IDs tied to active eviction filings",
+                    "Cross-match 311 gaps with Rent Board petitions quarterly",
                 ],
             },
             {
                 "rank": 3,
                 "priority": "MED",
-                "title": "Service Volume Equity Audit",
-                "desc": "Low 311 volume in high-rent areas may signal demand suppression, not satisfaction.",
+                "title": "Benchmark equity inside the cluster",
+                "desc": "Cluster averages mask internal gaps — low-income renters inside high-rent zones are the blind spot.",
+                "owner": "Controller + DataSF",
+                "kpi": "Income-tiered benchmark adopted; <10% p90/p10 gap in response time within cluster",
                 "actions": [
-                    "Compare utilization vs. physical infrastructure condition",
-                    "Investigate service equity for low-income renters in high-rent zones",
-                    "Establish per-income-tier equity benchmarks within cluster",
+                    "Split cluster reporting by income tertile and publish quarterly",
+                    "Pair each grid cell with a building-age p90 infrastructure-risk score",
+                    "Controller's Office approves the new equity benchmark by Q3",
                 ],
             },
         ],
         "queue": [
             (
-                "01",
-                "Audit rent-controlled units for deferred maintenance backlog",
-                "High rent + low volume is a suppression signal, not a success metric.",
+                "30d",
+                "DBI launches habitability inspection sweep of rent-controlled buildings 40+ years old",
+                "Inspection, not enforcement — the fastest way to see what silent tenants can't report.",
             ),
             (
-                "02",
-                "Deploy multilingual 311 outreach in high-rent displacement corridors",
-                "Non-English speakers in high-rent zones are least likely to self-report.",
+                "60d",
+                "Anonymous 311 channel live; outreach active in top-10 displacement ZIPs",
+                "Trusted reporting paths come before volume — otherwise the data stays skewed.",
             ),
             (
-                "03",
-                "Cross-reference 311 gaps with housing court filings",
-                "Litigation spikes often precede 311 volume — early warning system.",
+                "90d",
+                "Controller publishes income-tiered equity benchmark and landlord scorecard",
+                "What gets measured changes; publishing creates the accountability the cluster lacks.",
             ),
         ],
     },
     1: {
         "archetype": "Dominant Residential",
-        "signal": "High volume, moderate affordability stress, elevated cleaning demand",
+        "signal": "High-volume residential core — cleaning, tree care, and density pressure",
         "needs": [
             {
                 "rank": 1,
                 "priority": "HIGH",
-                "title": "Street & Sidewalk Cleaning Scale-Up",
-                "desc": "Highest cleaning request rate citywide — signals systemic under-staffing.",
+                "title": "Scale cleaning to match demand",
+                "desc": "Street and sidewalk cleaning is the top citywide request — this is a staffing and routing problem, not a behavior one.",
+                "owner": "DPW",
+                "kpi": "Median cleaning-request resolution <3 days; repeat-request rate <20%",
                 "actions": [
-                    "Increase street sweeping frequency in high-density corridors",
-                    "Install additional litter infrastructure at chokepoints",
-                    "Pilot automated cleaning notification via 311 app",
+                    "DPW: add one weekly sweep on streets with 10+ cleaning requests per month",
+                    "Install 300 corner bins at the top-50 litter hotspots by Q3",
+                    "Push 'sweep day' 311-app notifications 24 hours before arrival",
                 ],
             },
             {
                 "rank": 2,
                 "priority": "MED",
-                "title": "Tree Canopy & Green Space Maintenance",
-                "desc": "Elevated tree maintenance requests correlated with aging street trees.",
+                "title": "Shorten the tree-care cycle",
+                "desc": "Tree requests cluster on the aging canopy — deferred trimming drives liability and sidewalk damage.",
+                "owner": "DPW Bureau of Urban Forestry",
+                "kpi": "p90 time-to-trim under 120 days; trip-and-fall tree claims <5 per 1,000 trees per year",
                 "actions": [
-                    "Prioritize tree inventory audit in blocks with highest 311 tree requests",
-                    "Establish community stewardship programs for green corridors",
-                    "Accelerate DPW tree trimming cycle from 10yr to 5yr target",
+                    "Shift BUF trim cycle from 10 to 5 years on trees 40+ years old",
+                    "Open StreetTreeSF geolocation reporting to any resident without a login",
+                    "Fund 20 neighborhood stewardship micro-grants at $5k each",
                 ],
             },
             {
                 "rank": 3,
                 "priority": "HIGH",
-                "title": "Housing Density Pressure Relief",
-                "desc": "High occupancy ratio suggests units may be over-occupied relative to capacity.",
+                "title": "Release density pressure lawfully",
+                "desc": "High occupancy and long tenure signal crowding; enforcement alone displaces without increasing supply.",
+                "owner": "Planning + DBI + MOHCD",
+                "kpi": "+20% ADU permits filed vs. prior year; zero tenants displaced by overcrowding referrals",
                 "actions": [
-                    "Expand secondary unit permitting in under-utilized parcels",
-                    "Increase housing inspection capacity for overcrowding reports",
-                    "Target density relief through inclusionary infill housing pipeline",
+                    "Planning: expedite ADU permits to 90 days in this cluster",
+                    "DBI: route overcrowding inspections from tenant tips, not landlord calls",
+                    "MOHCD: publish a cluster infill-parcel inventory within 6 months",
                 ],
             },
         ],
         "queue": [
             (
-                "01",
-                "Surge street cleaning crews to top 20% density grid cells",
-                "Cleaning requests are proportional to unmet daily maintenance burden.",
+                "30d",
+                "DPW adds weekly sweep plus top-50 hotspot bin installation plan",
+                "Cleaning is the loudest signal — solving it first buys credibility for the rest.",
             ),
             (
-                "02",
-                "Fast-track tree trimming in corridors with 3+ open requests",
-                "Deferred tree maintenance creates escalating liability and safety risk.",
+                "60d",
+                "BUF trim cycle shortened on 40+ year trees across the cluster",
+                "Canopy debt compounds; shortening the cycle is cheaper than claims payouts.",
             ),
             (
-                "03",
-                "Conduct housing overcrowding inspection sweep in flagged cells",
-                "High density + long occupancy duration = silent overcrowding growth.",
+                "90d",
+                "Planning publishes ADU fast-track and infill inventory for the cluster",
+                "Density pressure is a supply problem; inspections alone just relocate it.",
             ),
         ],
     },
     2: {
         "archetype": "High-Density Outlier",
-        "signal": "Extreme volume + severe crowding + minimal positive services — statistical anomaly",
+        "signal": "5σ volume + severe crowding + minimal resolution — treat as an incident, not a baseline",
         "needs": [
             {
                 "rank": 1,
                 "priority": "CRITICAL",
-                "title": "Emergency High-Volume Service Infrastructure",
-                "desc": "Exceptional 311 volume + critically low positive service delivery — system overwhelmed.",
+                "title": "Stand up an incident response",
+                "desc": "A single cell at 5σ sustained is a service incident, not a baseline — it needs incident command, not quarterly review.",
+                "owner": "Office of the City Administrator",
+                "kpi": "Zero tickets older than 30 days by Day 45; incident closed or elevated to CAD by Day 90",
                 "actions": [
-                    "Deploy dedicated service crew to this cell immediately",
-                    "Triage 311 backlog by complaint age and recurrence frequency",
-                    "Assess if this cell is a routing anomaly or genuine hotspot",
+                    "Open a cross-agency incident command (DPW, DBI, HSOC, DPH) for 90 days",
+                    "Day 1: age-triage every open ticket; reassign or close anything over 30 days",
+                    "Daily standup with the Controller's Office reporting out",
                 ],
             },
             {
                 "rank": 2,
                 "priority": "CRITICAL",
-                "title": "Crowding Investigation & Housing Audit",
-                "desc": "Severe space crowding relative to building capacity. Likely undocumented multi-family.",
+                "title": "Verify what's inside the buildings",
+                "desc": "Severe crowding signals undocumented units or SRO conditions — a life-safety audit is overdue.",
+                "owner": "DBI + DPH",
+                "kpi": "100% parcels inspected; zero unpermitted units unresolved by Day 120",
                 "actions": [
-                    "Immediate housing inspection referral",
-                    "Cross-check building permits against occupancy data",
-                    "Engage community health workers for vulnerable resident outreach",
+                    "DBI: egress and occupancy audit on every parcel in the cell within 60 days",
+                    "DPH: offer on-site tenant health screenings during the audit window",
+                    "Freeze new certificates of occupancy in the cell until the audit clears",
                 ],
             },
             {
                 "rank": 3,
                 "priority": "HIGH",
-                "title": "Public Space Access Deficit",
-                "desc": "Low positive service rate in high-density zone creates compounded livability pressure.",
+                "title": "Restore livability bandwidth",
+                "desc": "A cell this dense with no positive-service signal is starved for public space and dedicated attention.",
+                "owner": "RPD + DPW",
+                "kpi": "Positive-service request share reaches the citywide median by Day 180",
                 "actions": [
-                    "Prioritize parklet or open space installation in adjacent blocks",
-                    "Increase sidewalk maintenance inspection frequency",
-                    "Establish community liaison for recurring public space issues",
+                    "RPD: fund a parklet or plaza activation within three blocks",
+                    "DPW: daily cleaning and bi-weekly graffiti abatement for 6 months",
+                    "Assign a 0.5 FTE community liaison for 12 months",
                 ],
             },
         ],
         "queue": [
             (
-                "01",
-                "Immediate multi-agency triage — 5sigma statistical outlier",
-                "Volume + crowding + low services = highest composite risk in dataset.",
+                "30d",
+                "Incident command stood up; age-triage of open tickets completed",
+                "5σ cells cannot be fixed by routine ops; command structure is the unlock.",
             ),
             (
-                "02",
-                "Deploy housing inspector and community health worker jointly",
-                "Co-deployment reduces duplicate visits and builds resident trust.",
+                "60d",
+                "DBI occupancy audit complete; community liaison in place",
+                "You cannot plan services until you know who is living where and how.",
             ),
             (
-                "03",
-                "Escalate to supervisor district for emergency resource allocation",
-                "Single-cell anomaly at this scale warrants political escalation.",
+                "90d",
+                "Parklet/plaza funded; cell reviewed by the Board of Supervisors",
+                "Formal supervisorial escalation keeps the fix durable past election cycles.",
             ),
         ],
     },
     3: {
         "archetype": "Slow Resolution Hotspot",
-        "signal": "Resolution time 5.5 sigma above city mean — institutional failure zone",
+        "signal": "Resolution time 5.5σ above city mean — a routing failure, not a workload spike",
         "needs": [
             {
                 "rank": 1,
                 "priority": "CRITICAL",
-                "title": "Emergency Resolution Time Intervention",
-                "desc": "Resolution days are 5.5 standard deviations above city mean — systemic failure.",
+                "title": "Break the 30-day backlog",
+                "desc": "Resolution this far above the mean points to stuck handoffs, not volume — fix the routing first.",
+                "owner": "311 Customer Service Center",
+                "kpi": "p90 resolution under 14 days by Day 90",
                 "actions": [
-                    "Audit all open 311 tickets in this cluster older than 30 days",
-                    "Assign dedicated case manager to chronic unresolved complaints",
-                    "Auto-escalate any ticket open more than 14 days",
+                    "Auto-escalate any ticket open more than 14 days to the department head with SLA timer",
+                    "Clear the cluster's 30-day backlog within 45 days",
+                    "Pause new low-priority intake until the backlog is under 100 tickets",
                 ],
             },
             {
                 "rank": 2,
                 "priority": "HIGH",
-                "title": "Encampment & Disorder Stabilization",
-                "desc": "Elevated negative signals (encampments, graffiti, abandoned vehicles) compound slow resolution.",
+                "title": "Stabilize negative-signal complaints",
+                "desc": "Encampments, graffiti, and abandoned vehicles compound each other — batched response beats siloed dispatch.",
+                "owner": "HSOC + DPW",
+                "kpi": "Repeat-complaint rate within the same block drops 40% in 6 months",
                 "actions": [
-                    "Coordinate HSOC and DPW joint sweeps with rehousing referrals",
-                    "Deploy graffiti abatement within 48h of report",
-                    "Establish abandoned vehicle fast-track tow program",
+                    "HSOC + DPW co-deploy with a housing navigator on the same day",
+                    "Graffiti abatement SLA of 48 hours from report",
+                    "Abandoned-vehicle auto-tow at 72 hours with no hold exception",
                 ],
             },
             {
                 "rank": 3,
                 "priority": "MED",
-                "title": "Systemic Service Routing Reform",
-                "desc": "Slow resolution often caused by inter-agency routing inefficiencies.",
+                "title": "Fix inter-agency routing",
+                "desc": "Handoffs between agencies are where time is lost — this is fixable with data, not staffing.",
+                "owner": "311 + DataSF",
+                "kpi": "Zero tickets with more than 3 inter-agency handoffs; median handoff time under 24 hours",
                 "actions": [
-                    "Audit 311 routing logs for inter-agency handoff failures",
-                    "Implement case ownership accountability by supervisor district",
-                    "Create resolution SLA dashboard visible to department heads",
+                    "Publish a 311 routing-log audit and a handoff dashboard by Q3",
+                    "Switch case ownership to supervisor district, not service type",
+                    "Send a monthly SLA scorecard to every department head",
                 ],
             },
         ],
         "queue": [
             (
-                "01",
-                "Audit all 311 tickets older than 30 days in Cluster D",
-                "A 5.5sigma resolution delay is institutional failure, not backlog.",
+                "30d",
+                "14-day auto-escalation rule live; backlog triage begins",
+                "The backlog isn't workload — it's absence of escalation pressure. Fix that first.",
             ),
             (
-                "02",
-                "Joint HSOC + DPW deployment for encampment clearance with rehousing",
-                "Co-deployment with rehousing prevents cycling; clearance alone does not.",
+                "60d",
+                "HSOC/DPW co-deployment piloted; graffiti 48-hour SLA enforced",
+                "Batched response on compounding complaints breaks the repeat-call feedback loop.",
             ),
             (
-                "03",
-                "Implement 14-day auto-escalation rule for all Cluster D tickets",
-                "Without structural escalation triggers, chronic delays persist indefinitely.",
+                "90d",
+                "Routing-log audit published; case ownership switched to supervisor district",
+                "Handoff accountability is the only durable fix for institutional slowness.",
             ),
         ],
     },
@@ -371,7 +404,23 @@ def load_and_aggregate_to_grid(csv_path: str) -> pd.DataFrame:
     for c in pct_cols:
         agg_dict[c] = "mean"
 
+    # Dominant administrative neighborhood per grid cell (mode of labels).
+    # Stored separately because mode() isn't supported by the standard
+    # DataFrame.agg() dict path.
+    if "analysis_neighborhood" in df.columns:
+        nbhd = (
+            df.dropna(subset=["analysis_neighborhood"])
+              .groupby("grid_id")["analysis_neighborhood"]
+              .agg(lambda s: s.mode().iat[0] if not s.mode().empty else np.nan)
+              .rename("neighborhood")
+        )
+    else:
+        nbhd = None
+
     grid_df = df.groupby("grid_id").agg(agg_dict).reset_index()
+
+    if nbhd is not None:
+        grid_df = grid_df.merge(nbhd, on="grid_id", how="left")
 
     # Convenience aliases for clustering feature names
     if "monthly_rent_clean" in grid_df.columns:
@@ -674,6 +723,8 @@ def main() -> None:
 
     if args.write_geojson:
         geo_cols = ["grid_id", "lat", "lon", "cluster", "equity_score", "performance_score", "need_score", "top3_features"]
+        if "neighborhood" in df_eq.columns:
+            geo_cols.append("neighborhood")
         geo_df = df_eq[geo_cols].copy()
         geojson = points_to_geojson(geo_df)
         _write_json(os.path.join(args.output_dir, "grid_points.geojson"), geojson)

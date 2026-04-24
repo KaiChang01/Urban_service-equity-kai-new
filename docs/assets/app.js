@@ -25,12 +25,14 @@ const els = {
   selClusterSection: document.getElementById("selClusterSection"),
   selCluster: document.getElementById("selCluster"),
   selClusterN: document.getElementById("selClusterN"),
+  selClusterNeighborhood: document.getElementById("selClusterNeighborhood"),
   selClusterEquityMean: document.getElementById("selClusterEquityMean"),
   selClusterTop: document.getElementById("selClusterTop"),
   clusterLink: document.getElementById("clusterLink"),
   // equity mode side panel
   selEquitySection: document.getElementById("selEquitySection"),
   selEquity: document.getElementById("selEquity"),
+  selEquityNeighborhood: document.getElementById("selEquityNeighborhood"),
   selTop: document.getElementById("selTop"),
   clearSelection: document.getElementById("clearSelection"),
   // bottom report section
@@ -246,6 +248,10 @@ function setSelection(props) {
   const mode = els.colorMode.value;
   const zRow = zRows.find((r) => String(r.cluster) === String(props.cluster));
 
+  const neighborhood = props.neighborhood && String(props.neighborhood).trim()
+    ? String(props.neighborhood)
+    : "—";
+
   if (mode === MODE_CLUSTER) {
     if (els.selPanelTitle) els.selPanelTitle.textContent = "Cluster Report";
     els.selClusterSection.classList.remove("hidden");
@@ -254,12 +260,13 @@ function setSelection(props) {
     els.selCluster.textContent = clusterName(props.cluster);
     const row = summaryRows.find((r) => String(r.cluster) === String(props.cluster));
     els.selClusterN.textContent = row?.n_grids_scored?.toLocaleString?.() ?? "—";
+    if (els.selClusterNeighborhood) els.selClusterNeighborhood.textContent = neighborhood;
     els.selClusterEquityMean.textContent = row ? fmt(row.equity_mean, 2) : "—";
     els.selClusterTop.innerHTML = formatTop3(zRow);
 
     if (els.clusterLink) els.clusterLink.href = "#report";
     setReportCluster(props.cluster);
-    setTimeout(() => els.reportAnchor?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+    // Auto-scroll disabled (v12): user can use the "View cluster report" button instead.
   } else {
     if (els.selPanelTitle) els.selPanelTitle.textContent = "Equity Score Report";
     els.selClusterSection.classList.add("hidden");
@@ -270,6 +277,7 @@ function setSelection(props) {
     els.selEquity.textContent = Number.isFinite(raw)
       ? `${raw.toFixed(2)}${pct !== null ? ` (${pct}th pctile)` : ""}`
       : "—";
+    if (els.selEquityNeighborhood) els.selEquityNeighborhood.textContent = neighborhood;
     els.selTop.innerHTML = formatTop3(zRow);
   }
 }

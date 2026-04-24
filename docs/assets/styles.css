@@ -106,6 +106,55 @@ code{background:rgba(255,255,255,.06);padding:2px 6px;border-radius:6px}
   min-height:520px;
 }
 
+/* Key performance metrics strip above the interactive map */
+.metricsPanel{
+  margin:12px 12px 0;
+}
+.metricsGrid{
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap:12px;
+  padding:14px;
+}
+.metricCard{
+  background:var(--panel2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:0;
+}
+.metricLabel{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  color:var(--muted);
+  font-weight:700;
+}
+.metricValue{
+  font-size:28px;
+  font-weight:800;
+  color:var(--text);
+  line-height:1.1;
+  letter-spacing:-.5px;
+}
+.metricUnit{
+  font-size:14px;
+  color:var(--muted);
+  font-weight:600;
+  margin-left:2px;
+}
+.metricSub{
+  font-size:11px;
+  color:var(--muted);
+  line-height:1.45;
+}
+@media (max-width: 900px){
+  .metricsGrid{grid-template-columns: repeat(2, 1fr);}
+}
+
 .legend{
   position:absolute;
   right:18px;
