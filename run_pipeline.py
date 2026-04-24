@@ -465,12 +465,27 @@ def run_kmeans(
 def equity_feature_engineering(df_clust: pd.DataFrame, *, cfg: Config) -> pd.DataFrame:
     """
     Match DB_MVP.ipynb Cell 6.
+
+    Also carries the administrative `neighborhood` label through to the final
+    equity dataframe. Neighborhood is a passthrough descriptor (not a numeric
+    input) so we include it in the projection but exclude it from the
+    equity-score dropna so that a missing neighborhood on some grids never
+    disqualifies those grids from being scored.
     """
     all_eq_cols = list(cfg.service_cols) + list(cfg.need_cols)
     _require_columns(df_clust, ["grid_id", "cluster", "lat", "lon"], context="equity scoring base")
     _require_columns(df_clust, all_eq_cols, context="equity scoring inputs")
 
-    df_eq = df_clust[["grid_id", "cluster", "lat", "lon"] + all_eq_cols].dropna().copy()
+    # Passthrough descriptors — always carried, but their NaNs never drop rows.
+    passthrough_cols = ["grid_id", "cluster", "lat", "lon"]
+    if "neighborhood" in df_clust.columns:
+        passthrough_cols.append("neighborhood")
+
+    df_eq = (
+        df_clust[passthrough_cols + all_eq_cols]
+        .dropna(subset=all_eq_cols)
+        .copy()
+    )
 
     # Service Performance sub-indicators
     df_eq["S1"] = np.log1p(df_eq["total_311_requests"])
@@ -508,8 +523,12 @@ def equity_feature_engineering(df_clust: pd.DataFrame, *, cfg: Config) -> pd.Dat
     s_cols = ["S1", "S2", "S3", "S4_pos", "S4_neg"]
     n_cols = ["N1", "N2", "N3", "N4", "N5"]
 
-    df_eq = df_eq[["grid_id", "cluster", "lat", "lon"] + s_cols + n_cols]
-    df_eq = df_eq.replace([np.inf, -np.inf], np.nan).dropna()
+    # Project to scoring columns but keep the neighborhood passthrough.
+    projection = passthrough_cols + s_cols + n_cols
+    df_eq = df_eq[projection]
+    # Only drop rows with inf/NaN in the scoring inputs — neighborhood nulls
+    # are fine and must not remove a grid from the output.
+    df_eq = df_eq.replace([np.inf, -np.inf], np.nan).dropna(subset=s_cols + n_cols)
     return df_eq
 
 

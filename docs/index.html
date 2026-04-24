@@ -19,7 +19,7 @@
       <div class="brand">
         <div class="title">Equity Dashboard</div>
         <div class="subtitle">Urban Service Equity — SF</div>
-        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-24 v13</div>
+        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-24 v14</div>
       </div>
 
       <div class="controls">
@@ -63,24 +63,59 @@
         <div class="panelMeta">311 service requests &times; SF housing inventory (combined dataset)</div>
       </div>
       <div class="metricsGrid">
-        <div class="metricCard">
-          <div class="metricLabel">Avg resolution time</div>
-          <div class="metricValue">11.8<span class="metricUnit"> days</span></div>
+        <div class="metricCard metricCard--amber">
+          <div class="metricHead">
+            <span class="metricIcon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            </span>
+            <span class="metricLabel">Avg resolution time</span>
+          </div>
+          <div class="metricValueRow">
+            <span class="metricValue">11.8</span>
+            <span class="metricUnit">days</span>
+          </div>
           <div class="metricSub">Mean days to close a 311 request across linked housing grids</div>
         </div>
-        <div class="metricCard">
-          <div class="metricLabel">Resolution time &sigma;</div>
-          <div class="metricValue">35.0<span class="metricUnit"> days</span></div>
+
+        <div class="metricCard metricCard--rose">
+          <div class="metricHead">
+            <span class="metricIcon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M5 20V9"/><path d="M10 20V5"/><path d="M15 20v-8"/><path d="M20 20v-4"/></svg>
+            </span>
+            <span class="metricLabel">Resolution spread</span>
+          </div>
+          <div class="metricValueRow">
+            <span class="metricValue">35.0</span>
+            <span class="metricUnit">days &sigma;</span>
+          </div>
           <div class="metricSub">Std. dev. of resolution days &mdash; large spread signals service inequity</div>
         </div>
-        <div class="metricCard">
-          <div class="metricLabel">Housing units analyzed</div>
-          <div class="metricValue">253,974</div>
+
+        <div class="metricCard metricCard--blue">
+          <div class="metricHead">
+            <span class="metricIcon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>
+            </span>
+            <span class="metricLabel">Housing units analyzed</span>
+          </div>
+          <div class="metricValueRow">
+            <span class="metricValue">253,974</span>
+            <span class="metricUnit">units</span>
+          </div>
           <div class="metricSub">Rows in SF housing inventory joined to 311 data (2024&ndash;2025)</div>
         </div>
-        <div class="metricCard">
-          <div class="metricLabel">Linked 311 requests</div>
-          <div class="metricValue">367,568</div>
+
+        <div class="metricCard metricCard--teal">
+          <div class="metricHead">
+            <span class="metricIcon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H5.5L4 17.5z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg>
+            </span>
+            <span class="metricLabel">Linked 311 requests</span>
+          </div>
+          <div class="metricValueRow">
+            <span class="metricValue">367,568</span>
+            <span class="metricUnit">cases</span>
+          </div>
           <div class="metricSub">Service requests matched to housing grid cells across 41 neighborhoods</div>
         </div>
       </div>

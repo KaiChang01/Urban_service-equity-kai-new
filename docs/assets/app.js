@@ -166,46 +166,79 @@ function markerStyle(props) {
   return { color: c, fillColor: c };
 }
 
-function getEquityHistogram(features, rangeMin, rangeMax, bins = EQUITY_HIST_BINS_MAX) {
+// Raw equity-score distribution for the legend.
+// `sortedScores` holds the ascending raw equity_score values across the dataset.
+// We bin the RAW score space (not percentile) and highlight the bins that
+// intersect the user's selected percentile filter, so the filter context is
+// preserved while showing the true underlying distribution.
+function getRawEquityHistogram(scores, bins) {
+  if (!scores?.length) return null;
+  const lo = scores[0];
+  const hi = scores[scores.length - 1];
+  const span = Math.max(1e-9, hi - lo);
   const counts = Array.from({ length: bins }, () => 0);
-  let total = 0;
-  const span = Math.max(1e-9, rangeMax - rangeMin);
-  for (const feature of features ?? []) {
-    const score = rawToPercent(Number(feature?.properties?.equity_score));
-    if (score === null) continue;
-    if (score < rangeMin || score > rangeMax) continue;
-    const idx = Math.min(bins - 1, Math.floor(((score - rangeMin) / span) * bins));
+  for (const s of scores) {
+    const idx = Math.min(bins - 1, Math.floor(((s - lo) / span) * bins));
     counts[idx] += 1;
-    total += 1;
   }
-  return { counts, total };
+  return { counts, lo, hi, span };
 }
 
 function renderEquityHistogram() {
-  if (!geo?.features?.length) return `<div class="legendHint">Distribution loading...</div>`;
-  const [emin, emax] = selectedEquityRange();
-  const span = Math.max(1e-9, emax - emin);
-  const bins = histogramBinsForSpan(span);
-  const { counts, total } = getEquityHistogram(geo.features, emin, emax, bins);
-  if (!total) return `<div class="legendHint">No equity scores in ${emin.toFixed(0)}-${emax.toFixed(0)}.</div>`;
+  if (!sortedScores?.length) {
+    return `<div class="legendHint">Distribution loading...</div>`;
+  }
+  const bins = EQUITY_HIST_BINS_MAX;
+  const hist = getRawEquityHistogram(sortedScores, bins);
+  if (!hist) return `<div class="legendHint">No equity scores available.</div>`;
+  const { counts, lo, hi, span } = hist;
   const maxCount = Math.max(...counts, 1);
+
+  // Translate the user-selected percentile range into raw-score thresholds so
+  // we can shade the bars that are inside the filter.
+  const [pmin, pmax] = selectedEquityRange();
+  const pctToRaw = (p) => {
+    const idx = Math.min(sortedScores.length - 1, Math.max(0, Math.round((p / 100) * (sortedScores.length - 1))));
+    return sortedScores[idx];
+  };
+  const rawMin = pctToRaw(pmin);
+  const rawMax = pctToRaw(pmax);
+
+  const fmtRaw = (v) => (span >= 10 ? v.toFixed(1) : v.toFixed(2));
+
   const bars = counts.map((count, i) => {
-    const lo = emin + i * (span / bins);
-    const hi = emin + (i + 1) * (span / bins);
-    const h = Math.max(4, Math.round((count / maxCount) * 36));
-    return `<div class="histBar" style="height:${h}px" title="${fmtBinEdge(lo, span)}-${fmtBinEdge(hi, span)}: ${count}"></div>`;
+    const binLo = lo + i * (span / bins);
+    const binHi = lo + (i + 1) * (span / bins);
+    const inRange = binHi >= rawMin && binLo <= rawMax;
+    const h = Math.max(4, Math.round((count / maxCount) * 40));
+    const cls = inRange ? "histBar histBar--in" : "histBar histBar--out";
+    return `<div class="${cls}" style="height:${h}px" title="${fmtRaw(binLo)}–${fmtRaw(binHi)}: ${count.toLocaleString()}"></div>`;
   }).join("");
-  const catRows = counts.map((count, i) => {
-    const lo = emin + i * (span / bins);
-    const hi = emin + (i + 1) * (span / bins);
-    return `<div class="histCat"><span>${fmtBinEdge(lo, span)}-${fmtBinEdge(hi, span)}</span><b>${count.toLocaleString()}</b></div>`;
-  }).join("");
+
+  const total = counts.reduce((a, b) => a + b, 0);
+  const inCount = counts.reduce((acc, c, i) => {
+    const binLo = lo + i * (span / bins);
+    const binHi = lo + (i + 1) * (span / bins);
+    return acc + ((binHi >= rawMin && binLo <= rawMax) ? c : 0);
+  }, 0);
+
+  const mid = lo + span / 2;
+
   return `
     <div class="histWrap">
-      <div class="histHeader"><span>Distribution ${emin.toFixed(0)}-${emax.toFixed(0)}</span><span>n=${total.toLocaleString()}</span></div>
+      <div class="histHeader">
+        <span>Raw score distribution</span>
+        <span>${inCount.toLocaleString()} / ${total.toLocaleString()}</span>
+      </div>
       <div class="histBars">${bars}</div>
-      <div class="histLabels"><span>${fmtBinEdge(emin, span)}</span><span>${fmtBinEdge((emin + emax) / 2, span)}</span><span>${fmtBinEdge(emax, span)}</span></div>
-      <div class="histCats">${catRows}</div>
+      <div class="histLabels">
+        <span>${fmtRaw(lo)}</span>
+        <span>${fmtRaw(mid)}</span>
+        <span>${fmtRaw(hi)}</span>
+      </div>
+      <div class="legendHint">
+        Filter window (raw): <b>${fmtRaw(rawMin)}</b> – <b>${fmtRaw(rawMax)}</b>
+      </div>
     </div>
   `;
 }
@@ -402,7 +435,13 @@ function rebuildLayer() {
     onEachFeature: (feature, l) => {
       const p = feature.properties ?? {};
       const pct = rawToPercent(Number(p.equity_score));
-      l.on("click", () => setSelection(p));
+      // Lock page scroll across setSelection so nothing (focus jumps, hash
+      // updates, Leaflet internals) can auto-scroll the page on point click.
+      l.on("click", () => {
+        const y = window.scrollY, x = window.scrollX;
+        setSelection(p);
+        requestAnimationFrame(() => window.scrollTo(x, y));
+      });
       l.bindTooltip(
         `<div style="font-family:ui-sans-serif,system-ui;font-size:12px">
           <div><b>${p.grid_id ?? "grid"}</b></div>
