@@ -41,6 +41,8 @@ const els = {
   direNeeds: document.getElementById("direNeeds"),
   priorityQueue: document.getElementById("priorityQueue"),
   needsAndInterventions: document.getElementById("needsAndInterventions"),
+  needsAndInterventionsEquity: document.getElementById("needsAndInterventionsEquity"),
+  reportEquityBand: document.getElementById("reportEquityBand"),
 };
 
 els.dataPath.textContent = "outputs/grid_points.geojson";
@@ -169,20 +171,26 @@ function markerStyle(props) {
 
 // Raw equity-score distribution for the legend.
 // `sortedScores` holds the ascending raw equity_score values across the dataset.
-// We bin the RAW score space (not percentile) and highlight the bins that
-// intersect the user's selected percentile filter, so the filter context is
-// preserved while showing the true underlying distribution.
+// v16: bin only the raw 40–60 window — that's where the bulk of the distribution
+// sits, and zooming in there keeps the legend compact (so it doesn't crowd the
+// equity / cluster report panels) while staying informative.
+const HIST_LO = 40;
+const HIST_HI = 60;
+
 function getRawEquityHistogram(scores, bins) {
   if (!scores?.length) return null;
-  const lo = scores[0];
-  const hi = scores[scores.length - 1];
+  const lo = HIST_LO;
+  const hi = HIST_HI;
   const span = Math.max(1e-9, hi - lo);
   const counts = Array.from({ length: bins }, () => 0);
+  let inWindow = 0;
   for (const s of scores) {
-    const idx = Math.min(bins - 1, Math.floor(((s - lo) / span) * bins));
+    if (s < lo || s > hi) continue;
+    inWindow += 1;
+    const idx = Math.min(bins - 1, Math.max(0, Math.floor(((s - lo) / span) * bins)));
     counts[idx] += 1;
   }
-  return { counts, lo, hi, span };
+  return { counts, lo, hi, span, inWindow, total: scores.length };
 }
 
 function renderEquityHistogram() {
@@ -192,11 +200,11 @@ function renderEquityHistogram() {
   const bins = EQUITY_HIST_BINS_MAX;
   const hist = getRawEquityHistogram(sortedScores, bins);
   if (!hist) return `<div class="legendHint">No equity scores available.</div>`;
-  const { counts, lo, hi, span } = hist;
+  const { counts, lo, hi, span, inWindow, total } = hist;
   const maxCount = Math.max(...counts, 1);
 
   // Translate the user-selected percentile range into raw-score thresholds so
-  // we can shade the bars that are inside the filter.
+  // we can shade the bars that are inside the filter (clipped to the 40–60 window).
   const [pmin, pmax] = selectedEquityRange();
   const pctToRaw = (p) => {
     const idx = Math.min(sortedScores.length - 1, Math.max(0, Math.round((p / 100) * (sortedScores.length - 1))));
@@ -205,40 +213,30 @@ function renderEquityHistogram() {
   const rawMin = pctToRaw(pmin);
   const rawMax = pctToRaw(pmax);
 
-  const fmtRaw = (v) => (span >= 10 ? v.toFixed(1) : v.toFixed(2));
+  const fmtRaw = (v) => v.toFixed(1);
 
   const bars = counts.map((count, i) => {
     const binLo = lo + i * (span / bins);
     const binHi = lo + (i + 1) * (span / bins);
     const inRange = binHi >= rawMin && binLo <= rawMax;
-    const h = Math.max(4, Math.round((count / maxCount) * 40));
+    const h = Math.max(3, Math.round((count / maxCount) * 32));
     const cls = inRange ? "histBar histBar--in" : "histBar histBar--out";
     return `<div class="${cls}" style="height:${h}px" title="${fmtRaw(binLo)}–${fmtRaw(binHi)}: ${count.toLocaleString()}"></div>`;
   }).join("");
-
-  const total = counts.reduce((a, b) => a + b, 0);
-  const inCount = counts.reduce((acc, c, i) => {
-    const binLo = lo + i * (span / bins);
-    const binHi = lo + (i + 1) * (span / bins);
-    return acc + ((binHi >= rawMin && binLo <= rawMax) ? c : 0);
-  }, 0);
 
   const mid = lo + span / 2;
 
   return `
     <div class="histWrap">
       <div class="histHeader">
-        <span>Raw score distribution</span>
-        <span>${inCount.toLocaleString()} / ${total.toLocaleString()}</span>
+        <span>Raw score (${HIST_LO}–${HIST_HI})</span>
+        <span>${inWindow.toLocaleString()} / ${total.toLocaleString()}</span>
       </div>
       <div class="histBars">${bars}</div>
       <div class="histLabels">
         <span>${fmtRaw(lo)}</span>
         <span>${fmtRaw(mid)}</span>
         <span>${fmtRaw(hi)}</span>
-      </div>
-      <div class="legendHint">
-        Filter window (raw): <b>${fmtRaw(rawMin)}</b> – <b>${fmtRaw(rawMax)}</b>
       </div>
     </div>
   `;
@@ -399,16 +397,13 @@ function renderZChart(c) {
   });
 }
 
-function renderHeuristics(c) {
+function renderHeuristics(c, target = els.needsAndInterventions) {
   const h = meta?.heuristics?.[String(c)] ?? meta?.heuristics?.[c];
-  const target = els.needsAndInterventions;
   if (!h) {
     if (target) target.textContent = "—";
     return;
   }
-  const needs = h.needs ?? [];
   if (!target) return;
-  if (!needs.length) { target.textContent = "—"; return; }
 
   const priorityClass = (p) => {
     const pp = String(p ?? "").toUpperCase();
@@ -416,6 +411,18 @@ function renderHeuristics(c) {
     if (pp === "HIGH") return "high";
     return "med";
   };
+  // Rank order: CRITICAL > HIGH > MED (lower number = higher intensity, sorted first)
+  const priorityRank = (p) => {
+    const pp = String(p ?? "").toUpperCase();
+    if (pp === "CRITICAL") return 0;
+    if (pp === "HIGH") return 1;
+    return 2;
+  };
+
+  // Sort needs by priority intensity (descending intensity → ascending rank).
+  // Stable sort preserves original order within same priority.
+  const needs = (h.needs ?? []).slice().sort((a, b) => priorityRank(a.priority) - priorityRank(b.priority));
+  if (!needs.length) { target.textContent = "—"; return; }
 
   target.innerHTML = needs.map((n, i) => {
     const pcls = priorityClass(n.priority);
@@ -456,6 +463,34 @@ function setReportCluster(c) {
   if (els.reportCluster) els.reportCluster.value = v;
   renderZChart(v);
   renderHeuristics(v);
+}
+
+// Map equity tier (lowest/low/high/highest) to the cluster ID whose
+// equity_mean places it at that tier. Computed from summaryRows on data load.
+let equityBandToCluster = { lowest: "0", low: "0", high: "0", highest: "0" };
+
+function buildEquityBandMap() {
+  if (!summaryRows?.length) return;
+  const ranked = summaryRows
+    .filter((r) => Number.isFinite(Number(r.equity_mean)))
+    .map((r) => ({ cluster: String(r.cluster), eq: Number(r.equity_mean) }))
+    .sort((a, b) => a.eq - b.eq);
+  if (!ranked.length) return;
+  // 4 clusters → 4 tiers (ascending equity mean)
+  const labels = ["lowest", "low", "high", "highest"];
+  equityBandToCluster = {};
+  for (let i = 0; i < labels.length; i++) {
+    const idx = Math.min(ranked.length - 1, Math.floor((i / (labels.length - 1)) * (ranked.length - 1)));
+    equityBandToCluster[labels[i]] = ranked[idx].cluster;
+  }
+  // For >4 clusters or fewer, the proportional indexing above still gives
+  // a sensible mapping; identical clusters at boundary just repeat.
+}
+
+function setReportEquityBand(band) {
+  const c = equityBandToCluster[band] ?? equityBandToCluster.lowest;
+  if (els.reportEquityBand) els.reportEquityBand.value = band;
+  renderHeuristics(c, els.needsAndInterventionsEquity);
 }
 
 function rebuildLayer() {
@@ -506,8 +541,10 @@ async function init() {
     .map((f) => Number(f.properties?.equity_score))
     .filter(Number.isFinite)
     .sort((a, b) => a - b);
+  buildEquityBandMap();
   renderLegend();
   setReportCluster("0");
+  setReportEquityBand("lowest");
   rebuildLayer();
 }
 
@@ -515,6 +552,7 @@ els.applyFilters.addEventListener("click", () => { renderLegend(); rebuildLayer(
 els.colorMode.addEventListener("change", () => { renderLegend(); rebuildLayer(); if (selectedProps) setSelection(selectedProps); });
 els.clearSelection.addEventListener("click", () => clearSelection());
 els.reportCluster?.addEventListener("change", (e) => setReportCluster(e.target.value));
+els.reportEquityBand?.addEventListener("change", (e) => setReportEquityBand(e.target.value));
 
 init().catch((err) => {
   console.error(err);

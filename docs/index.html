@@ -19,7 +19,7 @@
       <div class="brand">
         <div class="title">Equity Dashboard</div>
         <div class="subtitle">Urban Service Equity — SF</div>
-        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-24 v15</div>
+        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-24 v16</div>
       </div>
 
       <div class="controls">
@@ -201,7 +201,7 @@
     <main id="report" class="main reportMain">
       <section class="panel">
         <div class="panelHeader">
-          <div class="panelTitle">Needs and Intervention</div>
+          <div class="panelTitle">Needs and Intervention &mdash; by Cluster</div>
           <div class="panelMeta">From notebook heuristics</div>
         </div>
 
@@ -221,6 +221,29 @@
           <div id="needsAndInterventions" class="niStackInner">—</div>
           <div id="direNeeds" class="hidden"></div>
           <div id="priorityQueue" class="hidden"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panelHeader">
+          <div class="panelTitle">Needs and Intervention &mdash; by Equity Score</div>
+          <div class="panelMeta">Mapped from equity-tier &rarr; representative cluster</div>
+        </div>
+
+        <div class="reportControls">
+          <div class="control">
+            <label for="reportEquityBand">Equity tier</label>
+            <select id="reportEquityBand">
+              <option value="lowest">Most underserved (lowest equity)</option>
+              <option value="low">Underserved</option>
+              <option value="high">Better served</option>
+              <option value="highest">Best served (highest equity)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="niStack">
+          <div id="needsAndInterventionsEquity" class="niStackInner">—</div>
         </div>
       </section>
 
