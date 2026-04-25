@@ -171,11 +171,11 @@ function markerStyle(props) {
 
 // Raw equity-score distribution for the legend.
 // `sortedScores` holds the ascending raw equity_score values across the dataset.
-// v16: bin only the raw 40–60 window — that's where the bulk of the distribution
-// sits, and zooming in there keeps the legend compact (so it doesn't crowd the
-// equity / cluster report panels) while staying informative.
-const HIST_LO = 40;
-const HIST_HI = 60;
+// v17: zoom the histogram into the dense core of the distribution (45–53) so
+// the bell-curve shape is actually visible. Outside this window the
+// distribution has long thin tails that flatten everything when included.
+const HIST_LO = 45;
+const HIST_HI = 53;
 
 function getRawEquityHistogram(scores, bins) {
   if (!scores?.length) return null;
@@ -204,7 +204,7 @@ function renderEquityHistogram() {
   const maxCount = Math.max(...counts, 1);
 
   // Translate the user-selected percentile range into raw-score thresholds so
-  // we can shade the bars that are inside the filter (clipped to the 40–60 window).
+  // we can shade the bars that are inside the filter (clipped to the 45–53 window).
   const [pmin, pmax] = selectedEquityRange();
   const pctToRaw = (p) => {
     const idx = Math.min(sortedScores.length - 1, Math.max(0, Math.round((p / 100) * (sortedScores.length - 1))));
@@ -490,7 +490,59 @@ function buildEquityBandMap() {
 function setReportEquityBand(band) {
   const c = equityBandToCluster[band] ?? equityBandToCluster.lowest;
   if (els.reportEquityBand) els.reportEquityBand.value = band;
+
+  // Compute the tier context from the underlying grid features so the urban
+  // planner can see exactly which cells are in this tier.
+  const cells = (geo?.features ?? []).filter((f) => String(f.properties?.cluster) === String(c));
+  const scores = cells.map((f) => Number(f.properties?.equity_score)).filter(Number.isFinite);
+  let scoreMin = NaN, scoreMax = NaN, scoreMean = NaN;
+  if (scores.length) {
+    scoreMin = Math.min(...scores);
+    scoreMax = Math.max(...scores);
+    scoreMean = scores.reduce((a, b) => a + b, 0) / scores.length;
+  }
+  const neighborhoodCounts = {};
+  for (const f of cells) {
+    const n = (f.properties?.neighborhood ?? "").trim();
+    if (!n) continue;
+    neighborhoodCounts[n] = (neighborhoodCounts[n] ?? 0) + 1;
+  }
+  const topNeighborhoods = Object.entries(neighborhoodCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([name, n]) => `${name} <span class="tierMutedSmall">(${n})</span>`)
+    .join(" &middot; ") || "—";
+
+  const tierLabel = {
+    lowest: "Most underserved (lowest equity)",
+    low: "Underserved",
+    high: "Better served",
+    highest: "Best served (highest equity)",
+  }[band] ?? band;
+
+  const fmtN = (n) => Number.isFinite(n) ? n.toLocaleString() : "—";
+  const fmtR = (n) => Number.isFinite(n) ? n.toFixed(2) : "—";
+
+  const ctxHTML = `
+    <div class="tierContext tierContext--${band}">
+      <div class="tierContextHead">
+        <div class="tierContextLabel">${tierLabel}</div>
+        <div class="tierContextSub">Mapped to ${clusterName(c)}</div>
+      </div>
+      <div class="tierStats">
+        <div class="tierStat"><div class="tierStatK">Grid cells</div><div class="tierStatV">${fmtN(cells.length)}</div></div>
+        <div class="tierStat"><div class="tierStatK">Equity score range</div><div class="tierStatV">${fmtR(scoreMin)} &ndash; ${fmtR(scoreMax)}</div></div>
+        <div class="tierStat"><div class="tierStatK">Mean equity</div><div class="tierStatV">${fmtR(scoreMean)}</div></div>
+      </div>
+      <div class="tierNbhd"><span class="tierNbhdK">Top neighborhoods:</span> ${topNeighborhoods}</div>
+    </div>
+  `;
+
+  // Render heuristics into the target, then prepend the context block.
   renderHeuristics(c, els.needsAndInterventionsEquity);
+  if (els.needsAndInterventionsEquity) {
+    els.needsAndInterventionsEquity.insertAdjacentHTML("afterbegin", ctxHTML);
+  }
 }
 
 function rebuildLayer() {
