@@ -858,6 +858,42 @@ code{background:rgba(255,255,255,.06);padding:2px 6px;border-radius:6px}
   .lisaCell{ grid-template-columns: 56px 64px 1fr; gap:6px; font-size:11px; padding:5px 6px; }
 }
 
+/* ===== Needs and Intervention — by Equity Score (v23) ===== */
+.equityCellContext{
+  margin: 0 12px 12px;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.07);
+  background:linear-gradient(180deg, rgba(22,26,36,.82), rgba(15,18,25,.82));
+  font-size:13px;
+  color:#dbe0ea;
+}
+.equityCellContext.emptyResult{
+  color:var(--muted);
+  text-align:center;
+  border-style:dashed;
+  background:rgba(255,255,255,.02);
+}
+.equityCellHead{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+.equityCellId{ font-weight:900; font-size:16px; color:#f1f3f8; }
+.equityCellBadges{ display:flex; gap:6px; flex-wrap:wrap; }
+.equityCellGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:8px 0 12px;
+}
+.equityCellFeatures{ line-height:1.7; font-weight:600; }
+@media (max-width:560px){
+  .equityCellGrid{ grid-template-columns:1fr; }
+}
+
 /* ===== Grid Cell → Street Name lookup (v21) ===== */
 .cellLookup{ padding:0 14px 16px; }
 .cellLookupRow{

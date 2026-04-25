@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Equity Dashboard — Map</title>
-    <link rel="stylesheet" href="assets/styles.css?v=22" />
+    <link rel="stylesheet" href="assets/styles.css?v=23" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -19,7 +19,7 @@
       <div class="brand">
         <div class="title">Equity Dashboard</div>
         <div class="subtitle">Urban Service Equity — SF</div>
-        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-25 v22</div>
+        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-25 v23</div>
       </div>
 
       <div class="controls">
@@ -250,7 +250,33 @@
         <div id="lisaGroups" class="lisaGroups lisaGroups--side">—</div>
       </section>
 
-      <!-- 5. Needs and Intervention — by Cluster (with Root causes z-chart) -->
+      <!-- 5a. Needs and Intervention — by Equity Score (LL cell drill-down) -->
+      <section class="panel" id="equityCellPanel">
+        <div class="panelHeader">
+          <div class="panelTitle">Needs and Intervention &mdash; by Equity Score</div>
+          <div class="panelMeta">Pick a neighborhood, then an LL (most underserved) grid cell to see its specific needs</div>
+        </div>
+
+        <div class="reportControls">
+          <div class="control">
+            <label for="equityCellNbhd">Neighborhood</label>
+            <select id="equityCellNbhd"></select>
+          </div>
+          <div class="control">
+            <label for="equityCellId">LL grid cell</label>
+            <select id="equityCellId"></select>
+          </div>
+        </div>
+
+        <div id="equityCellContext" class="equityCellContext emptyResult">
+          Select a neighborhood and an LL grid cell to see its tailored needs and interventions.
+        </div>
+        <div class="niStack">
+          <div id="equityCellNeeds" class="niStackInner"></div>
+        </div>
+      </section>
+
+      <!-- 5b. Needs and Intervention — by Cluster (with Root causes z-chart) -->
       <section class="panel">
         <div class="panelHeader">
           <div class="panelTitle">Needs and Intervention &mdash; by Cluster</div>
@@ -314,6 +340,6 @@
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script type="module" src="assets/app.js?v=22"></script>
+    <script type="module" src="assets/app.js?v=23"></script>
   </body>
 </html>

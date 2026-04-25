@@ -751,6 +751,110 @@ function setupCellLookup() {
   input.addEventListener("keydown", (e) => { if (e.key === "Enter") doLookup(); });
 }
 
+// ----- v23: Needs & Intervention — by Equity Score (per LL cell) -----
+// Two-stage filter: neighborhood → LL cell. Reuses renderHeuristics(cluster, target)
+// so each LL cell inherits the recommended interventions of its parent cluster, but
+// shown alongside cell-specific context (id, equity, cluster, lat/lon, top features,
+// lazy-resolved street descriptor).
+function setupEquityCellPicker() {
+  const nbhdSel = document.getElementById("equityCellNbhd");
+  const cellSel = document.getElementById("equityCellId");
+  const ctxEl   = document.getElementById("equityCellContext");
+  const needsEl = document.getElementById("equityCellNeeds");
+  if (!nbhdSel || !cellSel || !ctxEl || !needsEl) return;
+
+  // Group LL cells by neighborhood
+  const llByNbhd = new Map();
+  for (const f of geo.features) {
+    if (f.properties?.lisa_quadrant !== "LL") continue;
+    const n = (f.properties?.neighborhood ?? "").trim() || "(unknown)";
+    if (!llByNbhd.has(n)) llByNbhd.set(n, []);
+    llByNbhd.get(n).push(f);
+  }
+  if (!llByNbhd.size) {
+    ctxEl.textContent = "No LL (statistically significant low-equity) cells found in this dataset.";
+    return;
+  }
+
+  const nbhds = Array.from(llByNbhd.entries()).sort((a, b) => b[1].length - a[1].length);
+  nbhdSel.innerHTML = nbhds
+    .map(([n, list]) => `<option value="${encodeURIComponent(n)}">${n} (${list.length} LL ${list.length === 1 ? "cell" : "cells"})</option>`)
+    .join("");
+
+  const populateCells = () => {
+    const n = decodeURIComponent(nbhdSel.value);
+    const cells = (llByNbhd.get(n) || [])
+      .slice()
+      .sort((a, b) => Number(a.properties.equity_score) - Number(b.properties.equity_score));
+    cellSel.innerHTML = cells
+      .map((f) => {
+        const eq = Number(f.properties.equity_score);
+        return `<option value="${f.properties.grid_id}">#${f.properties.grid_id} &mdash; eq ${Number.isFinite(eq) ? eq.toFixed(2) : "—"}</option>`;
+      })
+      .join("");
+    renderForCell();
+  };
+
+  const renderForCell = () => {
+    const id = String(cellSel.value);
+    const f = geo.features.find((ft) => String(ft.properties?.grid_id) === id);
+    if (!f) {
+      ctxEl.classList.add("emptyResult");
+      ctxEl.textContent = "No matching LL cell.";
+      needsEl.innerHTML = "";
+      return;
+    }
+    const p = f.properties;
+    const lat = Number(f.geometry?.coordinates?.[1]);
+    const lon = Number(f.geometry?.coordinates?.[0]);
+    const eq = Number(p.equity_score);
+    const cluster = clusterName(p.cluster);
+    const zRow = zRows.find((r) => String(r.cluster) === String(p.cluster));
+    const cached = streetDescriptorFor({ lat, lon });
+
+    ctxEl.classList.remove("emptyResult");
+    ctxEl.innerHTML = `
+      <div class="equityCellHead">
+        <div class="equityCellId">Grid #${p.grid_id ?? "?"}</div>
+        <div class="equityCellBadges">
+          <span class="lookupBadge lookupQuad lookupQuad--LL">LISA: LL</span>
+          <span class="lookupBadge">${cluster}</span>
+          <span class="lookupBadge">Equity ${Number.isFinite(eq) ? eq.toFixed(2) : "—"}</span>
+        </div>
+      </div>
+      <div class="equityCellGrid">
+        <div class="lookupKv"><div class="lookupK">Neighborhood</div><div class="lookupV">${(p.neighborhood ?? "—") || "—"}</div></div>
+        <div class="lookupKv"><div class="lookupK">Coordinates</div><div class="lookupV">${lat.toFixed(5)}°N, ${Math.abs(lon).toFixed(5)}°W</div></div>
+        <div class="lookupKv lookupKv--street">
+          <div class="lookupK">Street descriptor</div>
+          <div class="lookupV" id="equityCellStreet" data-street="1">${cached || `(${lat.toFixed(4)}, ${lon.toFixed(4)})`}</div>
+        </div>
+        <div class="lookupKv lookupKv--street">
+          <div class="lookupK">Top distinct features (vs city avg)</div>
+          <div class="lookupV equityCellFeatures">${formatTop3(zRow)}</div>
+        </div>
+      </div>
+      <div class="lookupActions">
+        <a class="btn secondary" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=18/${lat}/${lon}">Open on OSM</a>
+        <a class="btn secondary" target="_blank" rel="noopener" href="https://www.google.com/maps?q=${lat},${lon}">Open in Google Maps</a>
+      </div>
+    `;
+
+    // Render the cluster's needs/interventions into the equity-cell needs slot.
+    renderHeuristics(p.cluster, needsEl);
+
+    // Lazy resolve the street descriptor if not already cached.
+    const streetEl = document.getElementById("equityCellStreet");
+    if (streetEl && streetEl.textContent.indexOf("(") === 0) {
+      lazyAttachStreet(streetEl, lat, lon);
+    }
+  };
+
+  nbhdSel.addEventListener("change", populateCells);
+  cellSel.addEventListener("change", renderForCell);
+  populateCells();
+}
+
 // ----- Low Equity Neighborhoods (renamed from "Top areas with congregations of low equity") -----
 function renderLowEquityCongregations() {
   const target = document.getElementById("lowEquityCongregations");
@@ -952,6 +1056,7 @@ async function init() {
   setReportCluster("0");
   renderLisaUnderservedGroups();
   renderLowEquityCongregations();
+  setupEquityCellPicker();
   setupCellLookup();
   ensureNeighborhoodOverlay();
   rebuildLayer();
