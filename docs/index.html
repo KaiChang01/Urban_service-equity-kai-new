@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Equity Dashboard — Map</title>
-    <link rel="stylesheet" href="assets/styles.css?v=17" />
+    <link rel="stylesheet" href="assets/styles.css?v=18" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -19,7 +19,7 @@
       <div class="brand">
         <div class="title">Equity Dashboard</div>
         <div class="subtitle">Urban Service Equity — SF</div>
-        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-24 v17</div>
+        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-24 v18</div>
       </div>
 
       <div class="controls">
@@ -28,6 +28,7 @@
           <select id="colorMode">
             <option value="equity" selected>Equity score (0–100)</option>
             <option value="cluster">Cluster</option>
+            <option value="lisa">LISA cluster (spatial autocorrelation)</option>
           </select>
         </div>
 
@@ -190,6 +191,30 @@
             </div>
           </div>
 
+          <!-- LISA mode -->
+          <div id="selLisaSection" class="hidden">
+            <div class="kv">
+              <div class="k">LISA quadrant</div>
+              <div class="v"><span id="selLisaQuadrant" class="lisaPill">—</span></div>
+            </div>
+            <div class="kv">
+              <div class="k">Equity score</div>
+              <div class="v" id="selLisaEquity">—</div>
+            </div>
+            <div class="kv">
+              <div class="k">Neighborhood</div>
+              <div class="v" id="selLisaNeighborhood">—</div>
+            </div>
+            <div class="kv">
+              <div class="k">Local Moran's I</div>
+              <div class="v" id="selLisaI">—</div>
+            </div>
+            <div class="kv">
+              <div class="k">Significance (p)</div>
+              <div class="v" id="selLisaP">—</div>
+            </div>
+          </div>
+
           <div class="actions">
             <a id="clusterLink" class="btn" href="#report">View cluster report</a>
             <button id="clearSelection" class="btn secondary">Clear</button>
@@ -266,6 +291,6 @@
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script type="module" src="assets/app.js?v=17"></script>
+    <script type="module" src="assets/app.js?v=18"></script>
   </body>
 </html>

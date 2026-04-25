@@ -639,6 +639,77 @@ def make_cluster_summary(df_eq: pd.DataFrame, *, cfg: Config) -> pd.DataFrame:
     return summary
 
 
+def compute_local_morans_i(
+    df_eq: pd.DataFrame,
+    *,
+    k: int = 8,
+    permutations: int = 999,
+    seed: int = 42,
+    significance: float = 0.05,
+) -> pd.DataFrame:
+    """
+    Local Moran's I (LISA) for spatial autocorrelation of equity_score.
+
+    Uses libpysal KNN weights (k nearest neighbors by lat/lon) — appropriate
+    for grid-cell point centroids where Queen contiguity needs polygons.
+
+    Adds four columns to df_eq:
+      - lisa_I:        local Moran's I value
+      - lisa_z:        z-score from conditional permutation
+      - lisa_p:        pseudo p-value (lower = more significant)
+      - lisa_quadrant: HH | LL | HL | LH | NS  (NS if p > significance)
+
+    Quadrant interpretation for equity_score (higher = better-served):
+      HH: well-served cluster (high equity surrounded by high equity)
+      LL: UNDERSERVED cluster — the urban planner's target
+      HL: high-equity outlier in low-equity surroundings
+      LH: low-equity outlier in high-equity surroundings (struggling pocket)
+      NS: not statistically significant — no clear local pattern
+    """
+    try:
+        from libpysal.weights import KNN
+        from esda.moran import Moran_Local
+    except ImportError as exc:  # pragma: no cover
+        raise RuntimeError(
+            "Local Moran's I requires `libpysal` and `esda`. Install with:\n"
+            "  pip install libpysal esda --break-system-packages"
+        ) from exc
+
+    df = df_eq.copy().reset_index(drop=True)
+    coords = df[["lat", "lon"]].to_numpy()
+    y = df["equity_score"].to_numpy()
+
+    # Skip rows with missing coords/scores — LISA needs complete data.
+    mask = np.isfinite(coords).all(axis=1) & np.isfinite(y)
+    df_valid = df.loc[mask].reset_index(drop=True)
+    coords_valid = df_valid[["lat", "lon"]].to_numpy()
+    y_valid = df_valid["equity_score"].to_numpy()
+
+    w = KNN.from_array(coords_valid, k=k)
+    w.transform = "r"  # row-standardize
+    moran = Moran_Local(y_valid, w, permutations=permutations, seed=seed)
+
+    df_valid["lisa_I"] = moran.Is
+    df_valid["lisa_z"] = moran.z_sim
+    df_valid["lisa_p"] = moran.p_sim
+    # esda quadrant codes: 1=HH, 2=LH, 3=LL, 4=HL
+    quad_map = {1: "HH", 2: "LH", 3: "LL", 4: "HL"}
+    quadrants = np.array([quad_map.get(int(q), "NS") for q in moran.q])
+    quadrants[moran.p_sim > significance] = "NS"
+    df_valid["lisa_quadrant"] = quadrants
+
+    # Merge LISA columns back onto the original df (rows that were dropped get NaN/"NS").
+    df["lisa_I"] = np.nan
+    df["lisa_z"] = np.nan
+    df["lisa_p"] = np.nan
+    df["lisa_quadrant"] = "NS"
+    df.loc[mask, ["lisa_I", "lisa_z", "lisa_p", "lisa_quadrant"]] = df_valid[
+        ["lisa_I", "lisa_z", "lisa_p", "lisa_quadrant"]
+    ].values
+
+    return df
+
+
 def points_to_geojson(df: pd.DataFrame, *, id_col: str = "grid_id") -> dict:
     """
     Minimal GeoJSON FeatureCollection of Point features (no geopandas needed).
@@ -708,6 +779,17 @@ def main() -> None:
         lambda c: ", ".join([d["feature"] for d in top_map.get(int(c), [])])
     )
 
+    # Local Moran's I (LISA) for spatial autocorrelation of equity_score.
+    # Adds lisa_quadrant / lisa_z / lisa_p / lisa_I columns used by the dashboard.
+    try:
+        df_eq = compute_local_morans_i(df_eq, k=8, permutations=999, seed=cfg.random_state)
+    except Exception as exc:  # pragma: no cover
+        print(f"[warn] Skipping Local Moran's I: {exc}")
+        df_eq["lisa_quadrant"] = "NS"
+        df_eq["lisa_z"] = np.nan
+        df_eq["lisa_p"] = np.nan
+        df_eq["lisa_I"] = np.nan
+
     # Exports
     grid_results_path = os.path.join(args.output_dir, "grid_results.csv")
     cluster_summary_path = os.path.join(args.output_dir, "cluster_summary.csv")
@@ -744,6 +826,9 @@ def main() -> None:
         geo_cols = ["grid_id", "lat", "lon", "cluster", "equity_score", "performance_score", "need_score", "top3_features"]
         if "neighborhood" in df_eq.columns:
             geo_cols.append("neighborhood")
+        for lisa_col in ("lisa_quadrant", "lisa_z", "lisa_p", "lisa_I"):
+            if lisa_col in df_eq.columns:
+                geo_cols.append(lisa_col)
         geo_df = df_eq[geo_cols].copy()
         geojson = points_to_geojson(geo_df)
         _write_json(os.path.join(args.output_dir, "grid_points.geojson"), geojson)

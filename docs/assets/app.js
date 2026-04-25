@@ -2,6 +2,27 @@ import { CLUSTER_COLORS, equityColor, clamp, INDICATOR_LABELS, fmt } from "./uti
 
 const MODE_CLUSTER = "cluster";
 const MODE_EQUITY = "equity";
+const MODE_LISA = "lisa";
+
+// LISA quadrant palette. Optimized for the urban-planner use case:
+// LL (underserved cluster) is the priority signal — deep red, full opacity.
+// LH (struggling outlier in well-served area) is the secondary signal — orange.
+// HH (well-served cluster) is green; HL (well-served outlier) muted blue.
+// NS (non-significant) fades into the background.
+const LISA_COLORS = {
+  LL: "#dc2626", // priority: deep red
+  LH: "#f59e0b", // secondary: orange
+  HH: "#16a34a", // well-served: green
+  HL: "#3b82f6", // outlier high: blue
+  NS: "#475569", // non-significant: slate gray
+};
+const LISA_LABELS = {
+  LL: "Low–Low (underserved cluster)",
+  LH: "Low–High (struggling pocket)",
+  HH: "High–High (well-served cluster)",
+  HL: "High–Low (well-served outlier)",
+  NS: "Not significant",
+};
 
 const DATA_BASE = new URL("../outputs/", import.meta.url);
 const DATA_GEOJSON = new URL("grid_points.geojson", DATA_BASE).href;
@@ -34,6 +55,13 @@ const els = {
   selEquity: document.getElementById("selEquity"),
   selEquityNeighborhood: document.getElementById("selEquityNeighborhood"),
   selTop: document.getElementById("selTop"),
+  // LISA mode side panel
+  selLisaSection: document.getElementById("selLisaSection"),
+  selLisaQuadrant: document.getElementById("selLisaQuadrant"),
+  selLisaEquity: document.getElementById("selLisaEquity"),
+  selLisaNeighborhood: document.getElementById("selLisaNeighborhood"),
+  selLisaI: document.getElementById("selLisaI"),
+  selLisaP: document.getElementById("selLisaP"),
   clearSelection: document.getElementById("clearSelection"),
   // bottom report section
   reportCluster: document.getElementById("reportCluster"),
@@ -162,6 +190,11 @@ function markerStyle(props) {
   if (mode === MODE_CLUSTER) {
     return { color: CLUSTER_COLORS[props.cluster] ?? "#888", fillColor: CLUSTER_COLORS[props.cluster] ?? "#888" };
   }
+  if (mode === MODE_LISA) {
+    const q = props.lisa_quadrant ?? "NS";
+    const c = LISA_COLORS[q] ?? LISA_COLORS.NS;
+    return { color: c, fillColor: c };
+  }
   const pct = rawToPercent(Number(props.equity_score));
   const [emin, emax] = selectedEquityRange();
   const span = Math.max(1e-9, emax - emin);
@@ -255,6 +288,26 @@ function renderLegend() {
     `;
     return;
   }
+  if (mode === MODE_LISA) {
+    // Count quadrants from currently-loaded geo.
+    const counts = { LL: 0, LH: 0, HH: 0, HL: 0, NS: 0 };
+    for (const f of (geo?.features ?? [])) {
+      const q = f.properties?.lisa_quadrant ?? "NS";
+      counts[q] = (counts[q] ?? 0) + 1;
+    }
+    const order = ["LL", "LH", "HH", "HL", "NS"];
+    els.legend.innerHTML = `
+      <div class="legendTitle">Legend: LISA quadrant</div>
+      ${order.map((q) => `
+        <div class="legendRow">
+          <div class="swatch" style="background:${LISA_COLORS[q]}"></div>
+          <div style="flex:1">${LISA_LABELS[q]}</div>
+          <div style="color:var(--muted);font-size:11px">${counts[q].toLocaleString()}</div>
+        </div>`).join("")}
+      <div class="legendHint">Significance: p &le; 0.05 (KNN k=8, 999 perms)</div>
+    `;
+    return;
+  }
   const [emin, emax] = selectedEquityRange();
   els.legend.innerHTML = `
     <div class="legendTitle">Legend: Equity score (%)</div>
@@ -284,10 +337,14 @@ function setSelection(props) {
     ? String(props.neighborhood)
     : "—";
 
+  // hide all mode-specific sections by default
+  els.selClusterSection.classList.add("hidden");
+  els.selEquitySection.classList.add("hidden");
+  if (els.selLisaSection) els.selLisaSection.classList.add("hidden");
+
   if (mode === MODE_CLUSTER) {
     if (els.selPanelTitle) els.selPanelTitle.textContent = "Cluster Report";
     els.selClusterSection.classList.remove("hidden");
-    els.selEquitySection.classList.add("hidden");
 
     els.selCluster.textContent = clusterName(props.cluster);
     const row = summaryRows.find((r) => String(r.cluster) === String(props.cluster));
@@ -299,9 +356,32 @@ function setSelection(props) {
     if (els.clusterLink) els.clusterLink.href = "#report";
     setReportCluster(props.cluster);
     // Auto-scroll disabled (v12): user can use the "View cluster report" button instead.
+  } else if (mode === MODE_LISA) {
+    if (els.selPanelTitle) els.selPanelTitle.textContent = "LISA Report";
+    if (els.selLisaSection) els.selLisaSection.classList.remove("hidden");
+
+    const q = props.lisa_quadrant ?? "NS";
+    if (els.selLisaQuadrant) {
+      els.selLisaQuadrant.textContent = LISA_LABELS[q] ?? q;
+      els.selLisaQuadrant.style.background = (LISA_COLORS[q] ?? LISA_COLORS.NS) + "33";
+      els.selLisaQuadrant.style.borderColor = LISA_COLORS[q] ?? LISA_COLORS.NS;
+      els.selLisaQuadrant.style.color = LISA_COLORS[q] ?? LISA_COLORS.NS;
+    }
+    const raw = Number(props.equity_score);
+    if (els.selLisaEquity) {
+      els.selLisaEquity.textContent = Number.isFinite(raw) ? raw.toFixed(2) : "—";
+    }
+    if (els.selLisaNeighborhood) els.selLisaNeighborhood.textContent = neighborhood;
+    if (els.selLisaI) {
+      const li = Number(props.lisa_I);
+      els.selLisaI.textContent = Number.isFinite(li) ? li.toFixed(3) : "—";
+    }
+    if (els.selLisaP) {
+      const p = Number(props.lisa_p);
+      els.selLisaP.textContent = Number.isFinite(p) ? p.toFixed(3) : "—";
+    }
   } else {
     if (els.selPanelTitle) els.selPanelTitle.textContent = "Equity Score Report";
-    els.selClusterSection.classList.add("hidden");
     els.selEquitySection.classList.remove("hidden");
 
     const raw = Number(props.equity_score);
