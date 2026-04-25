@@ -40,6 +40,7 @@ const els = {
   reportAnchor: document.getElementById("report"),
   direNeeds: document.getElementById("direNeeds"),
   priorityQueue: document.getElementById("priorityQueue"),
+  needsAndInterventions: document.getElementById("needsAndInterventions"),
 };
 
 els.dataPath.textContent = "outputs/grid_points.geojson";
@@ -400,19 +401,54 @@ function renderZChart(c) {
 
 function renderHeuristics(c) {
   const h = meta?.heuristics?.[String(c)] ?? meta?.heuristics?.[c];
+  const target = els.needsAndInterventions;
   if (!h) {
-    if (els.direNeeds) els.direNeeds.textContent = "—";
-    if (els.priorityQueue) els.priorityQueue.textContent = "—";
+    if (target) target.textContent = "—";
     return;
   }
   const needs = h.needs ?? [];
-  if (els.direNeeds) els.direNeeds.innerHTML = needs.map((n) =>
-    `<div class="needCard"><div class="needTitle">${n.title}</div><div class="needDesc">${n.desc}</div></div>`
-  ).join("") || "—";
-  const allActions = needs.flatMap((n) => n.actions ?? []);
-  if (els.priorityQueue) els.priorityQueue.innerHTML = allActions.map((a) =>
-    `<div class="queueItem"><div class="queueAction">${a}</div></div>`
-  ).join("") || "—";
+  if (!target) return;
+  if (!needs.length) { target.textContent = "—"; return; }
+
+  const priorityClass = (p) => {
+    const pp = String(p ?? "").toUpperCase();
+    if (pp === "CRITICAL") return "critical";
+    if (pp === "HIGH") return "high";
+    return "med";
+  };
+
+  target.innerHTML = needs.map((n, i) => {
+    const pcls = priorityClass(n.priority);
+    const actions = (n.actions ?? []);
+    const actionsHTML = actions.length
+      ? actions.map((a) => `<li class="niAction"><span class="niBullet" aria-hidden="true"></span><span class="niActionText">${a}</span></li>`).join("")
+      : `<li class="niAction niActionEmpty">No interventions defined</li>`;
+    const meta = [
+      n.owner ? `<span class="niMetaItem"><span class="niMetaK">Owner</span><span class="niMetaV">${n.owner}</span></span>` : "",
+      n.kpi   ? `<span class="niMetaItem"><span class="niMetaK">KPI</span><span class="niMetaV">${n.kpi}</span></span>`   : "",
+    ].filter(Boolean).join("");
+    return `
+      <article class="niBlock niBlock--${pcls}">
+        <header class="niBlock__head">
+          <span class="niBlock__rank">${n.rank ?? (i + 1)}</span>
+          <div class="niBlock__headText">
+            <div class="niBlock__titleRow">
+              <h3 class="niBlock__title">${n.title ?? "Need"}</h3>
+              <span class="pill ${pcls}">${String(n.priority ?? "MED").toUpperCase()}</span>
+            </div>
+            ${n.desc ? `<p class="niBlock__desc">${n.desc}</p>` : ""}
+            ${meta ? `<div class="niBlock__meta">${meta}</div>` : ""}
+          </div>
+        </header>
+        <div class="niBlock__body">
+          <div class="niBlock__interventionsLabel">
+            <span class="niDot"></span>Interventions
+          </div>
+          <ul class="niBlock__interventions">${actionsHTML}</ul>
+        </div>
+      </article>
+    `;
+  }).join("");
 }
 
 function setReportCluster(c) {
