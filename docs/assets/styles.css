@@ -601,6 +601,85 @@ code{background:rgba(255,255,255,.06);padding:2px 6px;border-radius:6px}
   .tierStats{grid-template-columns:1fr 1fr}
 }
 
+/* ===== Low-equity congregations table (v19) ===== */
+.congTable{
+  padding:0 12px 14px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.congHead, .congRow{
+  display:grid;
+  grid-template-columns: 28px minmax(140px,1.4fr) minmax(120px,2fr) 44px 44px 64px;
+  gap:8px;
+  align-items:center;
+  padding:8px 10px;
+  border-radius:10px;
+}
+.congHead{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.05);
+  color:var(--muted);
+  font-size:10.5px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+.congRow{
+  background:linear-gradient(180deg, rgba(22,26,36,.9), rgba(15,18,25,.9));
+  border:1px solid rgba(255,255,255,.06);
+  font-size:12.5px;
+  color:#dbe0ea;
+}
+.congRow:hover{ border-color:rgba(255,255,255,.14); }
+.congCol{ min-width:0; }
+.congCol--rank{ font-weight:900; color:#f1f3f8; text-align:center; }
+.congCol--name{ font-weight:700; color:#f1f3f8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.congCol--n{ text-align:right; font-weight:800; font-variant-numeric:tabular-nums; }
+.congCol--n-ll{ color:#fca5a5; }
+.congCol--n-lh{ color:#fcd34d; }
+.congCol--score{ text-align:right; font-weight:800; color:#f1f3f8; font-variant-numeric:tabular-nums; }
+
+.congBarTrack{
+  position:relative;
+  height:14px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:999px;
+  overflow:hidden;
+  display:flex;
+}
+.congBarLL{ height:100%; background:#dc2626; }
+.congBarLH{ height:100%; background:#f59e0b; }
+
+.congLegend{
+  margin-top:6px;
+  font-size:11px;
+  color:var(--muted);
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.congSwatch{
+  display:inline-block;
+  width:10px;
+  height:10px;
+  border-radius:3px;
+  margin-right:4px;
+  vertical-align:middle;
+}
+.congSwatch--ll{ background:#dc2626; }
+.congSwatch--lh{ background:#f59e0b; }
+
+@media (max-width:560px){
+  .congHead, .congRow{
+    grid-template-columns: 24px minmax(100px,1.2fr) minmax(80px,1.4fr) 32px 32px 50px;
+    font-size:11px;
+    padding:6px 8px;
+  }
+}
+
 .chatMain{
   grid-template-columns: minmax(340px, 420px) 1fr;
 }

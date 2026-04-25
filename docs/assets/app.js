@@ -29,6 +29,7 @@ const DATA_GEOJSON = new URL("grid_points.geojson", DATA_BASE).href;
 const DATA_META = new URL("metadata.json", DATA_BASE).href;
 const DATA_SUMMARY = new URL("cluster_summary.csv", DATA_BASE).href;
 const DATA_Z = new URL("cluster_feature_zscores.csv", DATA_BASE).href;
+const DATA_NBHD = new URL("sf_neighborhoods.geojson", DATA_BASE).href;
 
 const els = {
   colorMode: document.getElementById("colorMode"),
@@ -69,8 +70,6 @@ const els = {
   direNeeds: document.getElementById("direNeeds"),
   priorityQueue: document.getElementById("priorityQueue"),
   needsAndInterventions: document.getElementById("needsAndInterventions"),
-  needsAndInterventionsEquity: document.getElementById("needsAndInterventionsEquity"),
-  reportEquityBand: document.getElementById("reportEquityBand"),
 };
 
 els.dataPath.textContent = "outputs/grid_points.geojson";
@@ -78,6 +77,8 @@ els.dataPath.textContent = "outputs/grid_points.geojson";
 let meta = null;
 let map = null;
 let layer = null;
+let nbhdLayer = null;
+let nbhdGeo = null;
 let geo = null;
 let summaryRows = [];
 let zRows = [];
@@ -204,11 +205,11 @@ function markerStyle(props) {
 
 // Raw equity-score distribution for the legend.
 // `sortedScores` holds the ascending raw equity_score values across the dataset.
-// v17: zoom the histogram into the dense core of the distribution (45–53) so
-// the bell-curve shape is actually visible. Outside this window the
-// distribution has long thin tails that flatten everything when included.
-const HIST_LO = 45;
-const HIST_HI = 53;
+// v19: zoom the histogram into the underservice end of the distribution (40–50).
+// This range surfaces the lower tail where intervention effort matters most;
+// the upper end (well-served cells) is summarized via the LISA legend.
+const HIST_LO = 40;
+const HIST_HI = 50;
 
 function getRawEquityHistogram(scores, bins) {
   if (!scores?.length) return null;
@@ -237,7 +238,7 @@ function renderEquityHistogram() {
   const maxCount = Math.max(...counts, 1);
 
   // Translate the user-selected percentile range into raw-score thresholds so
-  // we can shade the bars that are inside the filter (clipped to the 45–53 window).
+  // we can shade the bars that are inside the filter (clipped to the 40–50 window).
   const [pmin, pmax] = selectedEquityRange();
   const pctToRaw = (p) => {
     const idx = Math.min(sortedScores.length - 1, Math.max(0, Math.round((p / 100) * (sortedScores.length - 1))));
@@ -545,84 +546,189 @@ function setReportCluster(c) {
   renderHeuristics(v);
 }
 
-// Map equity tier (lowest/low/high/highest) to the cluster ID whose
-// equity_mean places it at that tier. Computed from summaryRows on data load.
-let equityBandToCluster = { lowest: "0", low: "0", high: "0", highest: "0" };
+// ===== v19: Moran scatter plot + low-equity congregations =====
+//
+// Replaces the old per-tier "needs by equity" panel with two views:
+//  (a) A Moran-style scatter: for each grid cell, plot z = standardized
+//      equity score on X and the neighbor-average (spatial lag) on Y.
+//      Colored by LISA quadrant. Slope of regression = global Moran's I.
+//  (b) A ranked table of neighborhoods by count of statistically-significant
+//      low-equity cells (LL + LH), surfacing where underservice congregates.
 
-function buildEquityBandMap() {
-  if (!summaryRows?.length) return;
-  const ranked = summaryRows
-    .filter((r) => Number.isFinite(Number(r.equity_mean)))
-    .map((r) => ({ cluster: String(r.cluster), eq: Number(r.equity_mean) }))
-    .sort((a, b) => a.eq - b.eq);
-  if (!ranked.length) return;
-  // 4 clusters → 4 tiers (ascending equity mean)
-  const labels = ["lowest", "low", "high", "highest"];
-  equityBandToCluster = {};
-  for (let i = 0; i < labels.length; i++) {
-    const idx = Math.min(ranked.length - 1, Math.floor((i / (labels.length - 1)) * (ranked.length - 1)));
-    equityBandToCluster[labels[i]] = ranked[idx].cluster;
+let moranChart = null;
+
+function renderMoranScatter() {
+  const ctx = document.getElementById("moranChart");
+  if (!ctx || !geo?.features?.length) return;
+
+  // Use only valid features (have equity score + lisa values)
+  const feats = geo.features.filter((f) =>
+    Number.isFinite(Number(f.properties?.equity_score)) &&
+    f.properties?.lisa_quadrant
+  );
+
+  // Standardize equity score for X axis (z-score)
+  const eq = feats.map((f) => Number(f.properties.equity_score));
+  const mean = eq.reduce((a, b) => a + b, 0) / eq.length;
+  const variance = eq.reduce((a, b) => a + (b - mean) ** 2, 0) / eq.length;
+  const sd = Math.sqrt(Math.max(variance, 1e-12));
+
+  // The lag (Y) we get from the LISA z-score divided back out of the local I
+  // formula: I_i = z_i * lag_i  →  lag_i = I_i / z_i.
+  // For points where z is near zero, fall back to a noisy small value.
+  const points = { LL: [], LH: [], HH: [], HL: [], NS: [] };
+  for (const f of feats) {
+    const z = (Number(f.properties.equity_score) - mean) / sd;
+    const I = Number(f.properties.lisa_I);
+    if (!Number.isFinite(z) || !Number.isFinite(I)) continue;
+    const lag = Math.abs(z) > 1e-6 ? I / z : 0;
+    const q = f.properties.lisa_quadrant ?? "NS";
+    (points[q] || points.NS).push({ x: z, y: lag });
   }
-  // For >4 clusters or fewer, the proportional indexing above still gives
-  // a sensible mapping; identical clusters at boundary just repeat.
+
+  // Compute global Moran's I via OLS slope of lag ~ z (passes through origin
+  // is the formal definition; here we keep it as standard linear regression).
+  const flat = [].concat(...Object.values(points));
+  let mz = 0, ml = 0, n = flat.length;
+  flat.forEach((p) => { mz += p.x; ml += p.y; });
+  mz /= n; ml /= n;
+  let num = 0, den = 0;
+  flat.forEach((p) => { num += (p.x - mz) * (p.y - ml); den += (p.x - mz) ** 2; });
+  const slope = den ? num / den : 0;
+  const intercept = ml - slope * mz;
+
+  const trendXmin = Math.min(...flat.map((p) => p.x));
+  const trendXmax = Math.max(...flat.map((p) => p.x));
+  const trendLine = [
+    { x: trendXmin, y: slope * trendXmin + intercept },
+    { x: trendXmax, y: slope * trendXmax + intercept },
+  ];
+
+  if (moranChart) moranChart.destroy();
+  moranChart = new Chart(ctx, {
+    type: "scatter",
+    data: {
+      datasets: [
+        { label: `LL (${points.LL.length}) — underserved cluster`, data: points.LL, backgroundColor: "rgba(220,38,38,.85)", pointRadius: 3.5 },
+        { label: `LH (${points.LH.length}) — struggling pocket`,    data: points.LH, backgroundColor: "rgba(245,158,11,.85)", pointRadius: 3.5 },
+        { label: `HH (${points.HH.length}) — well-served cluster`,  data: points.HH, backgroundColor: "rgba(22,163,74,.6)",  pointRadius: 2.5 },
+        { label: `HL (${points.HL.length}) — well-served outlier`,  data: points.HL, backgroundColor: "rgba(59,130,246,.6)", pointRadius: 2.5 },
+        { label: `NS (${points.NS.length}) — not significant`,      data: points.NS, backgroundColor: "rgba(148,163,184,.18)", pointRadius: 1.6 },
+        {
+          label: `Trend  (Moran's I ≈ ${slope.toFixed(3)})`,
+          data: trendLine, type: "line", showLine: true, fill: false, borderWidth: 2,
+          borderColor: "rgba(255,255,255,.8)", borderDash: [6, 4],
+          pointRadius: 0, tension: 0,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      plugins: {
+        legend: { position: "top", labels: { color: "rgba(232,234,240,.9)", font: { size: 11 }, boxWidth: 10 } },
+        tooltip: { callbacks: { label: (it) => `z=${it.parsed.x.toFixed(2)}, lag=${it.parsed.y.toFixed(2)}` } },
+      },
+      scales: {
+        x: {
+          title: { display: true, text: "Equity score (standardized z)", color: "rgba(232,234,240,.6)", font: { size: 11 } },
+          grid: { color: "rgba(255,255,255,.06)" },
+          ticks: { color: "rgba(232,234,240,.7)" },
+        },
+        y: {
+          title: { display: true, text: "Mean equity of 8 nearest neighbors (lag)", color: "rgba(232,234,240,.6)", font: { size: 11 } },
+          grid: { color: "rgba(255,255,255,.06)" },
+          ticks: { color: "rgba(232,234,240,.7)" },
+        },
+      },
+    },
+  });
 }
 
-function setReportEquityBand(band) {
-  const c = equityBandToCluster[band] ?? equityBandToCluster.lowest;
-  if (els.reportEquityBand) els.reportEquityBand.value = band;
+function renderLowEquityCongregations() {
+  const target = document.getElementById("lowEquityCongregations");
+  if (!target) return;
+  if (!geo?.features?.length) { target.textContent = "—"; return; }
 
-  // Compute the tier context from the underlying grid features so the urban
-  // planner can see exactly which cells are in this tier.
-  const cells = (geo?.features ?? []).filter((f) => String(f.properties?.cluster) === String(c));
-  const scores = cells.map((f) => Number(f.properties?.equity_score)).filter(Number.isFinite);
-  let scoreMin = NaN, scoreMax = NaN, scoreMean = NaN;
-  if (scores.length) {
-    scoreMin = Math.min(...scores);
-    scoreMax = Math.max(...scores);
-    scoreMean = scores.reduce((a, b) => a + b, 0) / scores.length;
+  // Group LL + LH cells by neighborhood; count + average equity per neighborhood.
+  const byNbhd = new Map();
+  for (const f of geo.features) {
+    const q = f.properties?.lisa_quadrant;
+    if (q !== "LL" && q !== "LH") continue;
+    const name = (f.properties?.neighborhood ?? "").trim() || "(unknown)";
+    if (!byNbhd.has(name)) byNbhd.set(name, { name, ll: 0, lh: 0, scores: [] });
+    const e = byNbhd.get(name);
+    if (q === "LL") e.ll += 1; else e.lh += 1;
+    const eq = Number(f.properties?.equity_score);
+    if (Number.isFinite(eq)) e.scores.push(eq);
   }
-  const neighborhoodCounts = {};
-  for (const f of cells) {
-    const n = (f.properties?.neighborhood ?? "").trim();
-    if (!n) continue;
-    neighborhoodCounts[n] = (neighborhoodCounts[n] ?? 0) + 1;
-  }
-  const topNeighborhoods = Object.entries(neighborhoodCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([name, n]) => `${name} <span class="tierMutedSmall">(${n})</span>`)
-    .join(" &middot; ") || "—";
+  const ranked = Array.from(byNbhd.values())
+    .map((e) => ({
+      ...e,
+      total: e.ll + e.lh,
+      meanScore: e.scores.length ? e.scores.reduce((a, b) => a + b, 0) / e.scores.length : NaN,
+    }))
+    .filter((e) => e.total > 0)
+    .sort((a, b) => (b.ll * 2 + b.lh) - (a.ll * 2 + a.lh)) // LL counts double — true clusters > pockets
+    .slice(0, 10);
 
-  const tierLabel = {
-    lowest: "Most underserved (lowest equity)",
-    low: "Underserved",
-    high: "Better served",
-    highest: "Best served (highest equity)",
-  }[band] ?? band;
+  if (!ranked.length) { target.textContent = "No statistically significant low-equity cells found."; return; }
 
-  const fmtN = (n) => Number.isFinite(n) ? n.toLocaleString() : "—";
-  const fmtR = (n) => Number.isFinite(n) ? n.toFixed(2) : "—";
+  const maxTotal = Math.max(...ranked.map((r) => r.total));
 
-  const ctxHTML = `
-    <div class="tierContext tierContext--${band}">
-      <div class="tierContextHead">
-        <div class="tierContextLabel">${tierLabel}</div>
-        <div class="tierContextSub">Mapped to ${clusterName(c)}</div>
-      </div>
-      <div class="tierStats">
-        <div class="tierStat"><div class="tierStatK">Grid cells</div><div class="tierStatV">${fmtN(cells.length)}</div></div>
-        <div class="tierStat"><div class="tierStatK">Equity score range</div><div class="tierStatV">${fmtR(scoreMin)} &ndash; ${fmtR(scoreMax)}</div></div>
-        <div class="tierStat"><div class="tierStatK">Mean equity</div><div class="tierStatV">${fmtR(scoreMean)}</div></div>
-      </div>
-      <div class="tierNbhd"><span class="tierNbhdK">Top neighborhoods:</span> ${topNeighborhoods}</div>
+  target.innerHTML = `
+    <div class="congHead">
+      <div class="congCol congCol--rank">#</div>
+      <div class="congCol congCol--name">Neighborhood</div>
+      <div class="congCol congCol--bar">Underserved cells</div>
+      <div class="congCol congCol--n">LL</div>
+      <div class="congCol congCol--n">LH</div>
+      <div class="congCol congCol--score">Mean eq.</div>
+    </div>
+    ${ranked.map((r, i) => {
+      const llW = (r.ll / maxTotal) * 100;
+      const lhW = (r.lh / maxTotal) * 100;
+      return `
+        <div class="congRow">
+          <div class="congCol congCol--rank">${i + 1}</div>
+          <div class="congCol congCol--name">${r.name}</div>
+          <div class="congCol congCol--bar">
+            <div class="congBarTrack">
+              <div class="congBarLL" style="width:${llW}%" title="LL: ${r.ll}"></div>
+              <div class="congBarLH" style="width:${lhW}%" title="LH: ${r.lh}"></div>
+            </div>
+          </div>
+          <div class="congCol congCol--n congCol--n-ll">${r.ll}</div>
+          <div class="congCol congCol--n congCol--n-lh">${r.lh}</div>
+          <div class="congCol congCol--score">${Number.isFinite(r.meanScore) ? r.meanScore.toFixed(2) : "—"}</div>
+        </div>`;
+    }).join("")}
+    <div class="congLegend">
+      <span class="congSwatch congSwatch--ll"></span> LL = significant low-equity cluster
+      &nbsp;&nbsp;
+      <span class="congSwatch congSwatch--lh"></span> LH = low-equity pocket in well-served surroundings
     </div>
   `;
+}
 
-  // Render heuristics into the target, then prepend the context block.
-  renderHeuristics(c, els.needsAndInterventionsEquity);
-  if (els.needsAndInterventionsEquity) {
-    els.needsAndInterventionsEquity.insertAdjacentHTML("afterbegin", ctxHTML);
-  }
+// ===== v19: SF neighborhood boundary overlay =====
+function ensureNeighborhoodOverlay() {
+  if (!map || !nbhdGeo) return;
+  if (nbhdLayer) return; // already rendered
+  nbhdLayer = L.geoJSON(nbhdGeo, {
+    interactive: false, // don't steal clicks from grid points
+    style: () => ({
+      color: "rgba(255,255,255,.55)",
+      weight: 1.2,
+      opacity: 0.85,
+      fill: true,
+      fillColor: "#ffffff",
+      fillOpacity: 0.0, // transparent fill — boundary lines only
+      dashArray: "3,3",
+    }),
+  }).addTo(map);
+  // Keep boundaries below the grid-point markers but above the basemap.
+  if (nbhdLayer.bringToBack) nbhdLayer.bringToBack();
 }
 
 function rebuildLayer() {
@@ -665,18 +771,23 @@ async function init() {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
-  const [m, g, summary, z] = await Promise.all([
-    fetchJson(DATA_META), fetchJson(DATA_GEOJSON), parseCsv(DATA_SUMMARY), parseCsv(DATA_Z),
+  const [m, g, summary, z, nbhd] = await Promise.all([
+    fetchJson(DATA_META),
+    fetchJson(DATA_GEOJSON),
+    parseCsv(DATA_SUMMARY),
+    parseCsv(DATA_Z),
+    fetchJson(DATA_NBHD).catch((e) => { console.warn("neighborhood overlay unavailable", e); return null; }),
   ]);
-  meta = m; geo = g; summaryRows = summary; zRows = z;
+  meta = m; geo = g; summaryRows = summary; zRows = z; nbhdGeo = nbhd;
   sortedScores = geo.features
     .map((f) => Number(f.properties?.equity_score))
     .filter(Number.isFinite)
     .sort((a, b) => a - b);
-  buildEquityBandMap();
   renderLegend();
   setReportCluster("0");
-  setReportEquityBand("lowest");
+  renderMoranScatter();
+  renderLowEquityCongregations();
+  ensureNeighborhoodOverlay();
   rebuildLayer();
 }
 
@@ -684,7 +795,6 @@ els.applyFilters.addEventListener("click", () => { renderLegend(); rebuildLayer(
 els.colorMode.addEventListener("change", () => { renderLegend(); rebuildLayer(); if (selectedProps) setSelection(selectedProps); });
 els.clearSelection.addEventListener("click", () => clearSelection());
 els.reportCluster?.addEventListener("change", (e) => setReportCluster(e.target.value));
-els.reportEquityBand?.addEventListener("change", (e) => setReportEquityBand(e.target.value));
 
 init().catch((err) => {
   console.error(err);

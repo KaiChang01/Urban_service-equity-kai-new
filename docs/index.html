@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Equity Dashboard — Map</title>
-    <link rel="stylesheet" href="assets/styles.css?v=18" />
+    <link rel="stylesheet" href="assets/styles.css?v=20" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -19,7 +19,7 @@
       <div class="brand">
         <div class="title">Equity Dashboard</div>
         <div class="subtitle">Urban Service Equity — SF</div>
-        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-24 v18</div>
+        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-25 v20</div>
       </div>
 
       <div class="controls">
@@ -251,25 +251,25 @@
 
       <section class="panel">
         <div class="panelHeader">
-          <div class="panelTitle">Needs and Intervention &mdash; by Equity Score</div>
-          <div class="panelMeta">Mapped from equity-tier &rarr; representative cluster</div>
+          <div class="panelTitle">Spatial Pattern of Equity Score</div>
+          <div class="panelMeta">Local Moran's I &mdash; LL = underserved cluster, LH = struggling pocket</div>
         </div>
 
-        <div class="reportControls">
-          <div class="control">
-            <label for="reportEquityBand">Equity tier</label>
-            <select id="reportEquityBand">
-              <option value="lowest">Most underserved (lowest equity)</option>
-              <option value="low">Underserved</option>
-              <option value="high">Better served</option>
-              <option value="highest">Best served (highest equity)</option>
-            </select>
-          </div>
+        <p class="smallNote">
+          Each dot is one grid cell. <b>X</b> = its equity score (standardized),
+          <b>Y</b> = average equity score of its 8 nearest neighbors.
+          Bottom-left quadrant (LL) = low equity surrounded by low equity = a true underserved cluster.
+          The slope of the trend line is the global Moran's I &mdash; positive slope means low-equity cells tend to neighbor each other (geographic clustering of underservice).
+        </p>
+        <div class="chartWrap">
+          <canvas id="moranChart" height="320"></canvas>
         </div>
 
-        <div class="niStack">
-          <div id="needsAndInterventionsEquity" class="niStackInner">—</div>
+        <div class="panelHeader" style="border-top:1px solid var(--border);margin-top:8px">
+          <div class="panelTitle">Top areas with congregations of low equity</div>
+          <div class="panelMeta">Neighborhoods ranked by count of statistically significant low-equity cells (LL + LH)</div>
         </div>
+        <div id="lowEquityCongregations" class="congTable">—</div>
       </section>
 
       <section class="panel">
@@ -291,6 +291,6 @@
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script type="module" src="assets/app.js?v=18"></script>
+    <script type="module" src="assets/app.js?v=20"></script>
   </body>
 </html>
