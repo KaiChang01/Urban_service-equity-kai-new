@@ -236,18 +236,34 @@
         <div id="lowEquityCells" class="lowEqCells"></div>
       </section>
 
-      <!-- 4. LISA quadrant — underserved groups by grid cell + street -->
+      <!-- 4. LISA quadrant — underserved groups (two-filter picker, parallels the Equity Score panel) -->
       <section class="panel" id="lisaGroupsPanel">
         <div class="panelHeader">
           <div class="panelTitle">LISA Quadrant &mdash; Underserved Groups</div>
-          <div class="panelMeta">Significant low-equity cells (LL + LH) grouped by neighborhood, with cell-level street context</div>
+          <div class="panelMeta">Pick a neighborhood, then a significant low-equity cell (LL or LH) to see its profile and recommended interventions</div>
         </div>
         <p class="smallNote">
           <b>LL</b> = a low-equity cell surrounded by low-equity neighbors (true underserved cluster).
           <b>LH</b> = a low-equity cell sitting in a higher-equity area (struggling pocket).
-          Street descriptors come from OpenStreetMap reverse geocoding and load lazily as you scroll.
         </p>
-        <div id="lisaGroups" class="lisaGroups lisaGroups--side">—</div>
+
+        <div class="reportControls">
+          <div class="control">
+            <label for="lisaNbhdSel">Neighborhood</label>
+            <select id="lisaNbhdSel"></select>
+          </div>
+          <div class="control">
+            <label for="lisaCellSel">Underserved cell</label>
+            <select id="lisaCellSel"></select>
+          </div>
+        </div>
+
+        <div id="lisaCellContext" class="equityCellContext emptyResult">
+          Select a neighborhood and an underserved cell to see its profile and tailored interventions.
+        </div>
+        <div class="niStack">
+          <div id="lisaCellNeeds" class="niStackInner"></div>
+        </div>
       </section>
 
       <!-- 5a. Needs and Intervention — by Equity Score (LL cell drill-down) -->

@@ -616,79 +616,144 @@ function lazyAttachStreet(el, lat, lon) {
   io.observe(el);
 }
 
-// ----- LISA underserved groups -----
-function renderLisaUnderservedGroups() {
-  const target = document.getElementById("lisaGroups");
-  if (!target) return;
-  if (!geo?.features?.length) { target.textContent = "—"; return; }
+// ----- v24: shared cell-context renderer used by both Equity Score and LISA pickers -----
+// Renders a polished context card (id, equity, quadrant, neighborhood, lat/lon,
+// street descriptor, top distinct features, OSM/Google Maps links) into `ctxEl`,
+// then delegates the cluster-derived needs/interventions to renderHeuristics.
+function renderCellPanel(f, ctxEl, needsEl, opts = {}) {
+  if (!f || !ctxEl || !needsEl) return;
+  const p = f.properties;
+  const lat = Number(f.geometry?.coordinates?.[1]);
+  const lon = Number(f.geometry?.coordinates?.[0]);
+  const eq = Number(p.equity_score);
+  const cluster = clusterName(p.cluster);
+  const zRow = zRows.find((r) => String(r.cluster) === String(p.cluster));
+  const cached = streetDescriptorFor({ lat, lon });
+  const quad = p.lisa_quadrant || "—";
+  const streetId = opts.streetId || `cellStreet_${p.grid_id ?? "x"}`;
 
-  // Collect LL + LH cells, grouped by quadrant then neighborhood.
-  const byQuad = { LL: new Map(), LH: new Map() };
-  for (const f of geo.features) {
-    const q = f.properties?.lisa_quadrant;
-    if (q !== "LL" && q !== "LH") continue;
-    const name = (f.properties?.neighborhood ?? "").trim() || "(unknown)";
-    if (!byQuad[q].has(name)) byQuad[q].set(name, []);
-    byQuad[q].get(name).push(f);
+  ctxEl.classList.remove("emptyResult");
+  ctxEl.innerHTML = `
+    <div class="equityCellHead">
+      <div class="equityCellId">Grid #${p.grid_id ?? "?"}</div>
+      <div class="equityCellBadges">
+        <span class="lookupBadge lookupQuad lookupQuad--${quad}">LISA: ${quad}</span>
+        <span class="lookupBadge">${cluster}</span>
+        <span class="lookupBadge">Equity ${Number.isFinite(eq) ? eq.toFixed(2) : "—"}</span>
+      </div>
+    </div>
+    <div class="equityCellGrid">
+      <div class="lookupKv"><div class="lookupK">Neighborhood</div><div class="lookupV">${(p.neighborhood ?? "—") || "—"}</div></div>
+      <div class="lookupKv"><div class="lookupK">Coordinates</div><div class="lookupV">${lat.toFixed(5)}°N, ${Math.abs(lon).toFixed(5)}°W</div></div>
+      <div class="lookupKv lookupKv--street">
+        <div class="lookupK">Street descriptor</div>
+        <div class="lookupV" id="${streetId}" data-street="1">${cached || `(${lat.toFixed(4)}, ${lon.toFixed(4)})`}</div>
+      </div>
+      <div class="lookupKv lookupKv--street">
+        <div class="lookupK">Top distinct features (vs city avg)</div>
+        <div class="lookupV equityCellFeatures">${formatTop3(zRow)}</div>
+      </div>
+    </div>
+    <div class="lookupActions">
+      <a class="btn secondary" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=18/${lat}/${lon}">Open on OSM</a>
+      <a class="btn secondary" target="_blank" rel="noopener" href="https://www.google.com/maps?q=${lat},${lon}">Open in Google Maps</a>
+    </div>
+  `;
+  renderHeuristics(p.cluster, needsEl);
+
+  const streetEl = document.getElementById(streetId);
+  if (streetEl && streetEl.textContent.indexOf("(") === 0) {
+    lazyAttachStreet(streetEl, lat, lon);
   }
-  const totals = { LL: Array.from(byQuad.LL.values()).reduce((a, l) => a + l.length, 0),
-                   LH: Array.from(byQuad.LH.values()).reduce((a, l) => a + l.length, 0) };
+}
 
-  if (totals.LL + totals.LH === 0) { target.textContent = "No statistically significant low-equity cells."; return; }
+// Generic two-stage neighborhood→cell picker. `predicate` filters cells; `cellLabel`
+// builds the text for each <option>; `sortCells` orders cells inside a neighborhood.
+function setupCellPicker(opts) {
+  const nbhdSel = document.getElementById(opts.nbhdSelId);
+  const cellSel = document.getElementById(opts.cellSelId);
+  const ctxEl   = document.getElementById(opts.ctxId);
+  const needsEl = document.getElementById(opts.needsId);
+  if (!nbhdSel || !cellSel || !ctxEl || !needsEl) return;
 
-  const renderQuad = (qcode, qlabel, qcolor, sub) => {
-    const groups = Array.from(byQuad[qcode].entries())
-      .map(([name, list]) => ({ name, list }))
-      .sort((a, b) => b.list.length - a.list.length);
-    const nbhdHTML = groups.map((g) => {
-      const cellsHTML = g.list
-        .sort((a, b) => Number(a.properties.equity_score) - Number(b.properties.equity_score))
-        .map((f) => {
-          const p = f.properties;
-          const lat = Number(f.geometry?.coordinates?.[1]);
-          const lon = Number(f.geometry?.coordinates?.[0]);
-          const eq = Number(p.equity_score);
-          const cached = streetDescriptorFor({ lat, lon });
-          return `
-            <li class="lisaCell" data-lat="${lat}" data-lon="${lon}">
-              <span class="lisaCellId">#${p.grid_id ?? "?"}</span>
-              <span class="lisaCellEq">eq ${Number.isFinite(eq) ? eq.toFixed(2) : "—"}</span>
-              <span class="lisaCellStreet" data-street="1">${cached || `(${lat.toFixed(4)}, ${lon.toFixed(4)})`}</span>
-            </li>`;
-        }).join("");
-      return `
-        <details class="lisaNbhd" ${groups.indexOf(g) < 2 ? "open" : ""}>
-          <summary class="lisaNbhdHead">
-            <span class="lisaNbhdName">${g.name}</span>
-            <span class="lisaNbhdCount">${g.list.length} ${g.list.length === 1 ? "cell" : "cells"}</span>
-          </summary>
-          <ul class="lisaCellList">${cellsHTML}</ul>
-        </details>`;
+  const byNbhd = new Map();
+  for (const f of geo.features) {
+    if (!opts.predicate(f)) continue;
+    const n = (f.properties?.neighborhood ?? "").trim() || "(unknown)";
+    if (!byNbhd.has(n)) byNbhd.set(n, []);
+    byNbhd.get(n).push(f);
+  }
+  if (!byNbhd.size) {
+    ctxEl.classList.add("emptyResult");
+    ctxEl.textContent = opts.emptyMessage || "No matching cells.";
+    cellSel.innerHTML = "";
+    nbhdSel.innerHTML = "";
+    return;
+  }
+
+  // Order neighborhoods by total cell count descending (LL counts double when
+  // both quadrants are involved, so most-impacted areas land at the top).
+  const nbhds = Array.from(byNbhd.entries()).sort((a, b) => {
+    const wa = a[1].reduce((s, f) => s + (f.properties.lisa_quadrant === "LL" ? 2 : 1), 0);
+    const wb = b[1].reduce((s, f) => s + (f.properties.lisa_quadrant === "LL" ? 2 : 1), 0);
+    return wb - wa;
+  });
+  nbhdSel.innerHTML = nbhds
+    .map(([n, list]) => `<option value="${encodeURIComponent(n)}">${n} (${list.length})</option>`)
+    .join("");
+
+  const populateCells = () => {
+    const n = decodeURIComponent(nbhdSel.value);
+    const cells = (byNbhd.get(n) || []).slice().sort(opts.sortCells);
+    cellSel.innerHTML = cells.map((f) => {
+      const eq = Number(f.properties.equity_score);
+      const id = f.properties.grid_id;
+      return `<option value="${id}">${opts.cellLabel(f, eq)}</option>`;
     }).join("");
-    return `
-      <div class="lisaQuadGroup">
-        <div class="lisaQuadHead" style="--quadAccent:${qcolor}">
-          <span class="lisaQuadCode">${qcode}</span>
-          <span class="lisaQuadLabel">${qlabel}</span>
-          <span class="lisaQuadCount">${totals[qcode]} cells &middot; ${groups.length} neighborhoods</span>
-        </div>
-        <div class="lisaQuadSub">${sub}</div>
-        <div class="lisaQuadBody">${nbhdHTML || "<div class='lisaEmpty'>None</div>"}</div>
-      </div>`;
+    renderForCell();
   };
 
-  target.innerHTML = `
-    ${renderQuad("LL", "Underserved clusters", "#dc2626", "Low equity surrounded by low equity — true underserved zones; highest priority.")}
-    ${renderQuad("LH", "Struggling pockets", "#f59e0b", "Low equity sitting next to higher equity — isolated pockets within otherwise well-served areas.")}
-  `;
+  const renderForCell = () => {
+    const id = String(cellSel.value);
+    const f = geo.features.find((ft) => String(ft.properties?.grid_id) === id);
+    if (!f) {
+      ctxEl.classList.add("emptyResult");
+      ctxEl.textContent = opts.emptyMessage || "No matching cell.";
+      needsEl.innerHTML = "";
+      return;
+    }
+    renderCellPanel(f, ctxEl, needsEl, { streetId: opts.streetId });
+  };
 
-  // Trigger lazy reverse-geocoding for the first ~30 visible cells
-  target.querySelectorAll(".lisaCell").forEach((li) => {
-    const street = li.querySelector(".lisaCellStreet[data-street='1']");
-    if (!street || street.textContent.indexOf("(") !== 0) return; // already resolved
-    const lat = Number(li.dataset.lat);
-    const lon = Number(li.dataset.lon);
-    lazyAttachStreet(street, lat, lon);
+  nbhdSel.addEventListener("change", populateCells);
+  cellSel.addEventListener("change", renderForCell);
+  populateCells();
+}
+
+// LISA picker: LL OR LH cells. LL first (highest priority), then LH, both sorted by
+// lowest equity score first within their group.
+function setupLisaCellPicker() {
+  setupCellPicker({
+    nbhdSelId: "lisaNbhdSel",
+    cellSelId: "lisaCellSel",
+    ctxId: "lisaCellContext",
+    needsId: "lisaCellNeeds",
+    streetId: "lisaCellStreet",
+    emptyMessage: "No statistically significant low-equity cells found.",
+    predicate: (f) => {
+      const q = f.properties?.lisa_quadrant;
+      return q === "LL" || q === "LH";
+    },
+    sortCells: (a, b) => {
+      const qa = a.properties.lisa_quadrant, qb = b.properties.lisa_quadrant;
+      if (qa !== qb) return qa === "LL" ? -1 : 1; // LL first
+      return Number(a.properties.equity_score) - Number(b.properties.equity_score);
+    },
+    cellLabel: (f, eq) => {
+      const q = f.properties.lisa_quadrant;
+      const eqStr = Number.isFinite(eq) ? eq.toFixed(2) : "—";
+      return `[${q}] #${f.properties.grid_id} \u2014 eq ${eqStr}`;
+    },
   });
 }
 
