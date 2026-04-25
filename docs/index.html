@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Equity Dashboard — Map</title>
-    <link rel="stylesheet" href="assets/styles.css?v=20" />
+    <link rel="stylesheet" href="assets/styles.css?v=21" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -19,7 +19,7 @@
       <div class="brand">
         <div class="title">Equity Dashboard</div>
         <div class="subtitle">Urban Service Equity — SF</div>
-        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-25 v20</div>
+        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-25 v21</div>
       </div>
 
       <div class="controls">
@@ -224,6 +224,33 @@
     </main>
 
     <main id="report" class="main reportMain">
+
+      <!-- 3. LISA quadrant — underserved groups by grid cell + street -->
+      <section class="panel" id="lisaGroupsPanel">
+        <div class="panelHeader">
+          <div class="panelTitle">LISA Quadrant &mdash; Underserved Groups</div>
+          <div class="panelMeta">Significant low-equity cells (LL + LH) grouped by neighborhood, with cell-level street context</div>
+        </div>
+        <p class="smallNote">
+          <b>LL</b> = a low-equity cell surrounded by low-equity neighbors (true underserved cluster).
+          <b>LH</b> = a low-equity cell sitting in a higher-equity area (struggling pocket).
+          Street descriptors come from OpenStreetMap reverse geocoding and load lazily as you scroll.
+        </p>
+        <div id="lisaGroups" class="lisaGroups">—</div>
+      </section>
+
+      <!-- 4. Low Equity Neighborhoods (was: Top areas with congregations of low equity) -->
+      <section class="panel" id="lowEquityPanel">
+        <div class="panelHeader">
+          <div class="panelTitle">Low Equity Neighborhoods</div>
+          <div class="panelMeta">Neighborhoods ranked by count of statistically significant low-equity cells (LL + LH)</div>
+        </div>
+        <div id="lowEquityCongregations" class="congTable">—</div>
+        <p class="smallNote" id="lowEquityHint">Click a neighborhood row to see a concise sample of its underserved cells with street context.</p>
+        <div id="lowEquityCells" class="lowEqCells"></div>
+      </section>
+
+      <!-- 5. Needs and Intervention — by Cluster (with Root causes z-chart) -->
       <section class="panel">
         <div class="panelHeader">
           <div class="panelTitle">Needs and Intervention &mdash; by Cluster</div>
@@ -247,41 +274,37 @@
           <div id="direNeeds" class="hidden"></div>
           <div id="priorityQueue" class="hidden"></div>
         </div>
-      </section>
-
-      <section class="panel">
-        <div class="panelHeader">
-          <div class="panelTitle">Spatial Pattern of Equity Score</div>
-          <div class="panelMeta">Local Moran's I &mdash; LL = underserved cluster, LH = struggling pocket</div>
-        </div>
-
-        <p class="smallNote">
-          Each dot is one grid cell. <b>X</b> = its equity score (standardized),
-          <b>Y</b> = average equity score of its 8 nearest neighbors.
-          Bottom-left quadrant (LL) = low equity surrounded by low equity = a true underserved cluster.
-          The slope of the trend line is the global Moran's I &mdash; positive slope means low-equity cells tend to neighbor each other (geographic clustering of underservice).
-        </p>
-        <div class="chartWrap">
-          <canvas id="moranChart" height="320"></canvas>
-        </div>
 
         <div class="panelHeader" style="border-top:1px solid var(--border);margin-top:8px">
-          <div class="panelTitle">Top areas with congregations of low equity</div>
-          <div class="panelMeta">Neighborhoods ranked by count of statistically significant low-equity cells (LL + LH)</div>
-        </div>
-        <div id="lowEquityCongregations" class="congTable">—</div>
-      </section>
-
-      <section class="panel">
-        <div class="panelHeader">
           <div class="panelTitle">Root causes (z-score vs city avg)</div>
-          <div class="panelMeta">How this cluster differs from the SF average — all features</div>
+          <div class="panelMeta">How this cluster differs from the SF average &mdash; all features</div>
         </div>
         <p class="smallNote">
           Green = above city average &nbsp;·&nbsp; Red = below city average &nbsp;·&nbsp; White line = city average (0)
         </p>
         <div class="chartWrap">
           <canvas id="zChart" height="260"></canvas>
+        </div>
+      </section>
+
+      <!-- 6. Grid Cell → Meaningful Street Name lookup -->
+      <section class="panel" id="cellLookupPanel">
+        <div class="panelHeader">
+          <div class="panelTitle">Grid Cell &rarr; Street Name</div>
+          <div class="panelMeta">Type a grid cell number to get a street-level descriptor for on-the-ground intervention</div>
+        </div>
+        <div class="cellLookup">
+          <div class="cellLookupRow">
+            <label for="cellLookupInput" class="cellLookupLabel">Grid cell ID</label>
+            <input id="cellLookupInput" class="cellLookupInput" type="text" inputmode="numeric" placeholder="e.g. 1234" autocomplete="off" />
+            <button id="cellLookupBtn" class="btn">Look up</button>
+          </div>
+          <div class="cellLookupHint">
+            Resolves the cell's centroid to a street descriptor via OpenStreetMap Nominatim. Results are cached per browser.
+          </div>
+          <div id="cellLookupResult" class="cellLookupResult emptyResult">
+            Enter a grid cell ID and press <b>Look up</b> to see its street-level location.
+          </div>
         </div>
       </section>
     </main>
@@ -291,6 +314,6 @@
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script type="module" src="assets/app.js?v=20"></script>
+    <script type="module" src="assets/app.js?v=21"></script>
   </body>
 </html>

@@ -546,105 +546,212 @@ function setReportCluster(c) {
   renderHeuristics(v);
 }
 
-// ===== v19: Moran scatter plot + low-equity congregations =====
+// ===== v21: LISA underserved groups + low-equity neighborhoods + cell lookup =====
 //
-// Replaces the old per-tier "needs by equity" panel with two views:
-//  (a) A Moran-style scatter: for each grid cell, plot z = standardized
-//      equity score on X and the neighbor-average (spatial lag) on Y.
-//      Colored by LISA quadrant. Slope of regression = global Moran's I.
-//  (b) A ranked table of neighborhoods by count of statistically-significant
-//      low-equity cells (LL + LH), surfacing where underservice congregates.
+// Three views, top to bottom in the report column:
+//   (a) renderLisaUnderservedGroups — LL + LH cells grouped by quadrant > nbhd,
+//       with grid_id and a lazy-loaded street descriptor per cell.
+//   (b) renderLowEquityCongregations — ranked-bar table of neighborhoods, with
+//       a click-to-expand sample of underserved cells per row.
+//   (c) setupCellLookup — input box: type a grid_id, get a street-level
+//       location via OpenStreetMap Nominatim reverse geocoding (cached).
 
-let moranChart = null;
+// ----- shared geocoding utilities -----
+const STREET_CACHE_KEY = "useq:streetCache:v1";
+let streetCache = (() => {
+  try { return JSON.parse(localStorage.getItem(STREET_CACHE_KEY) || "{}"); }
+  catch { return {}; }
+})();
+function persistStreetCache() {
+  try { localStorage.setItem(STREET_CACHE_KEY, JSON.stringify(streetCache)); } catch {}
+}
 
-function renderMoranScatter() {
-  const ctx = document.getElementById("moranChart");
-  if (!ctx || !geo?.features?.length) return;
-
-  // Use only valid features (have equity score + lisa values)
-  const feats = geo.features.filter((f) =>
-    Number.isFinite(Number(f.properties?.equity_score)) &&
-    f.properties?.lisa_quadrant
-  );
-
-  // Standardize equity score for X axis (z-score)
-  const eq = feats.map((f) => Number(f.properties.equity_score));
-  const mean = eq.reduce((a, b) => a + b, 0) / eq.length;
-  const variance = eq.reduce((a, b) => a + (b - mean) ** 2, 0) / eq.length;
-  const sd = Math.sqrt(Math.max(variance, 1e-12));
-
-  // The lag (Y) we get from the LISA z-score divided back out of the local I
-  // formula: I_i = z_i * lag_i  →  lag_i = I_i / z_i.
-  // For points where z is near zero, fall back to a noisy small value.
-  const points = { LL: [], LH: [], HH: [], HL: [], NS: [] };
-  for (const f of feats) {
-    const z = (Number(f.properties.equity_score) - mean) / sd;
-    const I = Number(f.properties.lisa_I);
-    if (!Number.isFinite(z) || !Number.isFinite(I)) continue;
-    const lag = Math.abs(z) > 1e-6 ? I / z : 0;
-    const q = f.properties.lisa_quadrant ?? "NS";
-    (points[q] || points.NS).push({ x: z, y: lag });
-  }
-
-  // Compute global Moran's I via OLS slope of lag ~ z (passes through origin
-  // is the formal definition; here we keep it as standard linear regression).
-  const flat = [].concat(...Object.values(points));
-  let mz = 0, ml = 0, n = flat.length;
-  flat.forEach((p) => { mz += p.x; ml += p.y; });
-  mz /= n; ml /= n;
-  let num = 0, den = 0;
-  flat.forEach((p) => { num += (p.x - mz) * (p.y - ml); den += (p.x - mz) ** 2; });
-  const slope = den ? num / den : 0;
-  const intercept = ml - slope * mz;
-
-  const trendXmin = Math.min(...flat.map((p) => p.x));
-  const trendXmax = Math.max(...flat.map((p) => p.x));
-  const trendLine = [
-    { x: trendXmin, y: slope * trendXmin + intercept },
-    { x: trendXmax, y: slope * trendXmax + intercept },
-  ];
-
-  if (moranChart) moranChart.destroy();
-  moranChart = new Chart(ctx, {
-    type: "scatter",
-    data: {
-      datasets: [
-        { label: `LL (${points.LL.length}) — underserved cluster`, data: points.LL, backgroundColor: "rgba(220,38,38,.85)", pointRadius: 3.5 },
-        { label: `LH (${points.LH.length}) — struggling pocket`,    data: points.LH, backgroundColor: "rgba(245,158,11,.85)", pointRadius: 3.5 },
-        { label: `HH (${points.HH.length}) — well-served cluster`,  data: points.HH, backgroundColor: "rgba(22,163,74,.6)",  pointRadius: 2.5 },
-        { label: `HL (${points.HL.length}) — well-served outlier`,  data: points.HL, backgroundColor: "rgba(59,130,246,.6)", pointRadius: 2.5 },
-        { label: `NS (${points.NS.length}) — not significant`,      data: points.NS, backgroundColor: "rgba(148,163,184,.18)", pointRadius: 1.6 },
-        {
-          label: `Trend  (Moran's I ≈ ${slope.toFixed(3)})`,
-          data: trendLine, type: "line", showLine: true, fill: false, borderWidth: 2,
-          borderColor: "rgba(255,255,255,.8)", borderDash: [6, 4],
-          pointRadius: 0, tension: 0,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      animation: false,
-      plugins: {
-        legend: { position: "top", labels: { color: "rgba(232,234,240,.9)", font: { size: 11 }, boxWidth: 10 } },
-        tooltip: { callbacks: { label: (it) => `z=${it.parsed.x.toFixed(2)}, lag=${it.parsed.y.toFixed(2)}` } },
-      },
-      scales: {
-        x: {
-          title: { display: true, text: "Equity score (standardized z)", color: "rgba(232,234,240,.6)", font: { size: 11 } },
-          grid: { color: "rgba(255,255,255,.06)" },
-          ticks: { color: "rgba(232,234,240,.7)" },
-        },
-        y: {
-          title: { display: true, text: "Mean equity of 8 nearest neighbors (lag)", color: "rgba(232,234,240,.6)", font: { size: 11 } },
-          grid: { color: "rgba(255,255,255,.06)" },
-          ticks: { color: "rgba(232,234,240,.7)" },
-        },
-      },
-    },
+// Throttle to ~1 req/sec to comply with Nominatim usage policy
+let _geocodeQueue = Promise.resolve();
+function reverseGeocode(lat, lon) {
+  const key = `${lat.toFixed(5)},${lon.toFixed(5)}`;
+  if (streetCache[key]) return Promise.resolve(streetCache[key]);
+  _geocodeQueue = _geocodeQueue.then(() => new Promise((res) => setTimeout(res, 1100)));
+  return _geocodeQueue.then(async () => {
+    if (streetCache[key]) return streetCache[key]; // race
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`;
+    const resp = await fetch(url, { headers: { "Accept": "application/json" } });
+    if (!resp.ok) throw new Error(`nominatim ${resp.status}`);
+    const j = await resp.json();
+    const a = j.address || {};
+    const road = a.road || a.pedestrian || a.footway || a.path || "";
+    const xstreet = a.cycleway || a["road:reference"] || "";
+    const nbhd = a.neighbourhood || a.suburb || a.quarter || "";
+    const desc = road
+      ? `${road}${nbhd ? ` (${nbhd})` : ""}`
+      : (j.display_name || "").split(",").slice(0, 2).join(", ");
+    const out = { road, neighborhood: nbhd, display: desc, full: j.display_name || "" };
+    streetCache[key] = out;
+    persistStreetCache();
+    return out;
   });
 }
 
+function streetDescriptorFor(props) {
+  const lat = Number(props?.lat ?? props?.latitude);
+  const lon = Number(props?.lon ?? props?.longitude);
+  const key = `${lat.toFixed(5)},${lon.toFixed(5)}`;
+  return streetCache[key]?.display || null;
+}
+
+function lazyAttachStreet(el, lat, lon) {
+  // IntersectionObserver: only fetch when scrolled into view
+  if (!el || !Number.isFinite(lat) || !Number.isFinite(lon)) return;
+  const trigger = () => {
+    reverseGeocode(lat, lon)
+      .then((s) => { if (s?.display) el.textContent = s.display; })
+      .catch(() => { el.textContent = `(${lat.toFixed(4)}, ${lon.toFixed(4)})`; });
+  };
+  if (!("IntersectionObserver" in window)) { trigger(); return; }
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) { io.unobserve(e.target); trigger(); }
+    }
+  }, { rootMargin: "200px" });
+  io.observe(el);
+}
+
+// ----- LISA underserved groups -----
+function renderLisaUnderservedGroups() {
+  const target = document.getElementById("lisaGroups");
+  if (!target) return;
+  if (!geo?.features?.length) { target.textContent = "—"; return; }
+
+  // Collect LL + LH cells, grouped by quadrant then neighborhood.
+  const byQuad = { LL: new Map(), LH: new Map() };
+  for (const f of geo.features) {
+    const q = f.properties?.lisa_quadrant;
+    if (q !== "LL" && q !== "LH") continue;
+    const name = (f.properties?.neighborhood ?? "").trim() || "(unknown)";
+    if (!byQuad[q].has(name)) byQuad[q].set(name, []);
+    byQuad[q].get(name).push(f);
+  }
+  const totals = { LL: Array.from(byQuad.LL.values()).reduce((a, l) => a + l.length, 0),
+                   LH: Array.from(byQuad.LH.values()).reduce((a, l) => a + l.length, 0) };
+
+  if (totals.LL + totals.LH === 0) { target.textContent = "No statistically significant low-equity cells."; return; }
+
+  const renderQuad = (qcode, qlabel, qcolor, sub) => {
+    const groups = Array.from(byQuad[qcode].entries())
+      .map(([name, list]) => ({ name, list }))
+      .sort((a, b) => b.list.length - a.list.length);
+    const nbhdHTML = groups.map((g) => {
+      const cellsHTML = g.list
+        .sort((a, b) => Number(a.properties.equity_score) - Number(b.properties.equity_score))
+        .map((f) => {
+          const p = f.properties;
+          const lat = Number(f.geometry?.coordinates?.[1]);
+          const lon = Number(f.geometry?.coordinates?.[0]);
+          const eq = Number(p.equity_score);
+          const cached = streetDescriptorFor({ lat, lon });
+          return `
+            <li class="lisaCell" data-lat="${lat}" data-lon="${lon}">
+              <span class="lisaCellId">#${p.grid_id ?? "?"}</span>
+              <span class="lisaCellEq">eq ${Number.isFinite(eq) ? eq.toFixed(2) : "—"}</span>
+              <span class="lisaCellStreet" data-street="1">${cached || `(${lat.toFixed(4)}, ${lon.toFixed(4)})`}</span>
+            </li>`;
+        }).join("");
+      return `
+        <details class="lisaNbhd" ${groups.indexOf(g) < 2 ? "open" : ""}>
+          <summary class="lisaNbhdHead">
+            <span class="lisaNbhdName">${g.name}</span>
+            <span class="lisaNbhdCount">${g.list.length} ${g.list.length === 1 ? "cell" : "cells"}</span>
+          </summary>
+          <ul class="lisaCellList">${cellsHTML}</ul>
+        </details>`;
+    }).join("");
+    return `
+      <div class="lisaQuadGroup">
+        <div class="lisaQuadHead" style="--quadAccent:${qcolor}">
+          <span class="lisaQuadCode">${qcode}</span>
+          <span class="lisaQuadLabel">${qlabel}</span>
+          <span class="lisaQuadCount">${totals[qcode]} cells &middot; ${groups.length} neighborhoods</span>
+        </div>
+        <div class="lisaQuadSub">${sub}</div>
+        <div class="lisaQuadBody">${nbhdHTML || "<div class='lisaEmpty'>None</div>"}</div>
+      </div>`;
+  };
+
+  target.innerHTML = `
+    ${renderQuad("LL", "Underserved clusters", "#dc2626", "Low equity surrounded by low equity — true underserved zones; highest priority.")}
+    ${renderQuad("LH", "Struggling pockets", "#f59e0b", "Low equity sitting next to higher equity — isolated pockets within otherwise well-served areas.")}
+  `;
+
+  // Trigger lazy reverse-geocoding for the first ~30 visible cells
+  target.querySelectorAll(".lisaCell").forEach((li) => {
+    const street = li.querySelector(".lisaCellStreet[data-street='1']");
+    if (!street || street.textContent.indexOf("(") !== 0) return; // already resolved
+    const lat = Number(li.dataset.lat);
+    const lon = Number(li.dataset.lon);
+    lazyAttachStreet(street, lat, lon);
+  });
+}
+
+// ----- Cell lookup widget -----
+function setupCellLookup() {
+  const input = document.getElementById("cellLookupInput");
+  const btn = document.getElementById("cellLookupBtn");
+  const out = document.getElementById("cellLookupResult");
+  if (!input || !btn || !out) return;
+
+  const findCell = (idStr) => {
+    const id = String(idStr).trim();
+    if (!id) return null;
+    return geo?.features?.find((f) => String(f.properties?.grid_id) === id) || null;
+  };
+
+  const doLookup = async () => {
+    out.classList.remove("emptyResult");
+    const f = findCell(input.value);
+    if (!f) {
+      out.innerHTML = `<div class="lookupErr">No grid cell found for "<b>${input.value || "—"}</b>". Try a numeric grid_id from the map.</div>`;
+      return;
+    }
+    const p = f.properties;
+    const lat = Number(f.geometry?.coordinates?.[1]);
+    const lon = Number(f.geometry?.coordinates?.[0]);
+    const eq = Number(p.equity_score);
+    const cluster = clusterName(p.cluster);
+    const quad = p.lisa_quadrant || "—";
+    out.innerHTML = `
+      <div class="lookupHead">
+        <div class="lookupGridId">Grid #${p.grid_id ?? "?"}</div>
+        <div class="lookupBadges">
+          <span class="lookupBadge">${cluster}</span>
+          <span class="lookupBadge lookupQuad lookupQuad--${quad}">LISA: ${quad}</span>
+          <span class="lookupBadge">Equity ${Number.isFinite(eq) ? eq.toFixed(2) : "—"}</span>
+        </div>
+      </div>
+      <div class="lookupGrid">
+        <div class="lookupKv"><div class="lookupK">Neighborhood</div><div class="lookupV">${(p.neighborhood ?? "—") || "—"}</div></div>
+        <div class="lookupKv"><div class="lookupK">Coordinates</div><div class="lookupV">${lat.toFixed(5)}°N, ${Math.abs(lon).toFixed(5)}°W</div></div>
+        <div class="lookupKv lookupKv--street"><div class="lookupK">Street descriptor</div><div class="lookupV" id="lookupStreet">resolving via OpenStreetMap…</div></div>
+      </div>
+      <div class="lookupActions">
+        <a class="btn secondary" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=18/${lat}/${lon}">Open on OSM</a>
+        <a class="btn secondary" target="_blank" rel="noopener" href="https://www.google.com/maps?q=${lat},${lon}">Open in Google Maps</a>
+      </div>
+    `;
+    try {
+      const s = await reverseGeocode(lat, lon);
+      const el = document.getElementById("lookupStreet");
+      if (el) el.textContent = s.display || s.full || "(unresolved)";
+    } catch (err) {
+      const el = document.getElementById("lookupStreet");
+      if (el) el.textContent = `(geocoding failed: ${err.message || err})`;
+    }
+  };
+
+  btn.addEventListener("click", doLookup);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") doLookup(); });
+}
+
+// ----- Low Equity Neighborhoods (renamed from "Top areas with congregations of low equity") -----
 function renderLowEquityCongregations() {
   const target = document.getElementById("lowEquityCongregations");
   if (!target) return;
@@ -689,7 +796,7 @@ function renderLowEquityCongregations() {
       const llW = (r.ll / maxTotal) * 100;
       const lhW = (r.lh / maxTotal) * 100;
       return `
-        <div class="congRow">
+        <button type="button" class="congRow" data-nbhd="${encodeURIComponent(r.name)}">
           <div class="congCol congCol--rank">${i + 1}</div>
           <div class="congCol congCol--name">${r.name}</div>
           <div class="congCol congCol--bar">
@@ -701,7 +808,7 @@ function renderLowEquityCongregations() {
           <div class="congCol congCol--n congCol--n-ll">${r.ll}</div>
           <div class="congCol congCol--n congCol--n-lh">${r.lh}</div>
           <div class="congCol congCol--score">${Number.isFinite(r.meanScore) ? r.meanScore.toFixed(2) : "—"}</div>
-        </div>`;
+        </button>`;
     }).join("")}
     <div class="congLegend">
       <span class="congSwatch congSwatch--ll"></span> LL = significant low-equity cluster
@@ -709,6 +816,64 @@ function renderLowEquityCongregations() {
       <span class="congSwatch congSwatch--lh"></span> LH = low-equity pocket in well-served surroundings
     </div>
   `;
+
+  // Wire up click-to-expand: clicking a neighborhood row reveals a concise
+  // sample of its underserved cells with a street descriptor (LL first, then
+  // worst LH cells, capped at ~6 per neighborhood for brevity).
+  target.querySelectorAll(".congRow[data-nbhd]").forEach((row) => {
+    row.addEventListener("click", () => {
+      const name = decodeURIComponent(row.dataset.nbhd);
+      target.querySelectorAll(".congRow").forEach((r) => r.classList.toggle("isActive", r === row));
+      renderLowEquityCellsForNeighborhood(name);
+    });
+  });
+}
+
+function renderLowEquityCellsForNeighborhood(name) {
+  const out = document.getElementById("lowEquityCells");
+  if (!out) return;
+  const cells = geo.features.filter((f) => {
+    const q = f.properties?.lisa_quadrant;
+    if (q !== "LL" && q !== "LH") return false;
+    const n = (f.properties?.neighborhood ?? "").trim() || "(unknown)";
+    return n === name;
+  });
+  if (!cells.length) { out.innerHTML = `<div class="emptyText">No underserved cells found in ${name}.</div>`; return; }
+
+  // Pick representative samples: all LL cells (always priority) + lowest-equity LH cells, cap at 6.
+  const ll = cells.filter((f) => f.properties.lisa_quadrant === "LL")
+    .sort((a, b) => Number(a.properties.equity_score) - Number(b.properties.equity_score));
+  const lh = cells.filter((f) => f.properties.lisa_quadrant === "LH")
+    .sort((a, b) => Number(a.properties.equity_score) - Number(b.properties.equity_score));
+  const sample = ll.concat(lh).slice(0, 6);
+
+  out.innerHTML = `
+    <div class="lowEqTitle">Sample of underserved cells in <b>${name}</b>
+      <span class="lowEqCount">(${cells.length} total &middot; showing ${sample.length})</span>
+    </div>
+    <ul class="lowEqList">
+      ${sample.map((f) => {
+        const p = f.properties;
+        const lat = Number(f.geometry?.coordinates?.[1]);
+        const lon = Number(f.geometry?.coordinates?.[0]);
+        const eq = Number(p.equity_score);
+        const cached = streetDescriptorFor({ lat, lon });
+        return `
+          <li class="lowEqCell" data-lat="${lat}" data-lon="${lon}">
+            <span class="lowEqQuad lowEqQuad--${p.lisa_quadrant}">${p.lisa_quadrant}</span>
+            <span class="lowEqId">#${p.grid_id ?? "?"}</span>
+            <span class="lowEqEq">eq ${Number.isFinite(eq) ? eq.toFixed(2) : "—"}</span>
+            <span class="lowEqStreet" data-street="1">${cached || `(${lat.toFixed(4)}, ${lon.toFixed(4)})`}</span>
+          </li>`;
+      }).join("")}
+    </ul>
+  `;
+
+  out.querySelectorAll(".lowEqCell").forEach((li) => {
+    const street = li.querySelector(".lowEqStreet[data-street='1']");
+    if (!street || street.textContent.indexOf("(") !== 0) return;
+    lazyAttachStreet(street, Number(li.dataset.lat), Number(li.dataset.lon));
+  });
 }
 
 // ===== v19: SF neighborhood boundary overlay =====
@@ -785,8 +950,9 @@ async function init() {
     .sort((a, b) => a - b);
   renderLegend();
   setReportCluster("0");
-  renderMoranScatter();
+  renderLisaUnderservedGroups();
   renderLowEquityCongregations();
+  setupCellLookup();
   ensureNeighborhoodOverlay();
   rebuildLayer();
 }
