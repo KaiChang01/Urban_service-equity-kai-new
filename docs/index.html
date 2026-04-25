@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Equity Dashboard — Map</title>
-    <link rel="stylesheet" href="assets/styles.css?v=21" />
+    <link rel="stylesheet" href="assets/styles.css?v=22" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -19,7 +19,7 @@
       <div class="brand">
         <div class="title">Equity Dashboard</div>
         <div class="subtitle">Urban Service Equity — SF</div>
-        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-25 v21</div>
+        <div style="font-size:11px;color:#f90;margin-top:4px;">DEBUG: deployed 2026-04-25 v22</div>
       </div>
 
       <div class="controls">
@@ -225,7 +225,18 @@
 
     <main id="report" class="main reportMain">
 
-      <!-- 3. LISA quadrant — underserved groups by grid cell + street -->
+      <!-- 3. Low Equity Neighborhoods (was: Top areas with congregations of low equity) -->
+      <section class="panel" id="lowEquityPanel">
+        <div class="panelHeader">
+          <div class="panelTitle">Low Equity Neighborhoods</div>
+          <div class="panelMeta">Neighborhoods ranked by count of statistically significant low-equity cells (LL + LH)</div>
+        </div>
+        <div id="lowEquityCongregations" class="congTable">—</div>
+        <p class="smallNote" id="lowEquityHint">Click a neighborhood row to see a concise sample of its underserved cells with street context.</p>
+        <div id="lowEquityCells" class="lowEqCells"></div>
+      </section>
+
+      <!-- 4. LISA quadrant — underserved groups by grid cell + street -->
       <section class="panel" id="lisaGroupsPanel">
         <div class="panelHeader">
           <div class="panelTitle">LISA Quadrant &mdash; Underserved Groups</div>
@@ -236,18 +247,7 @@
           <b>LH</b> = a low-equity cell sitting in a higher-equity area (struggling pocket).
           Street descriptors come from OpenStreetMap reverse geocoding and load lazily as you scroll.
         </p>
-        <div id="lisaGroups" class="lisaGroups">—</div>
-      </section>
-
-      <!-- 4. Low Equity Neighborhoods (was: Top areas with congregations of low equity) -->
-      <section class="panel" id="lowEquityPanel">
-        <div class="panelHeader">
-          <div class="panelTitle">Low Equity Neighborhoods</div>
-          <div class="panelMeta">Neighborhoods ranked by count of statistically significant low-equity cells (LL + LH)</div>
-        </div>
-        <div id="lowEquityCongregations" class="congTable">—</div>
-        <p class="smallNote" id="lowEquityHint">Click a neighborhood row to see a concise sample of its underserved cells with street context.</p>
-        <div id="lowEquityCells" class="lowEqCells"></div>
+        <div id="lisaGroups" class="lisaGroups lisaGroups--side">—</div>
       </section>
 
       <!-- 5. Needs and Intervention — by Cluster (with Root causes z-chart) -->
@@ -314,6 +314,6 @@
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script type="module" src="assets/app.js?v=21"></script>
+    <script type="module" src="assets/app.js?v=22"></script>
   </body>
 </html>

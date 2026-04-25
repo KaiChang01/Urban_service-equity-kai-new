@@ -755,6 +755,18 @@ code{background:rgba(255,255,255,.06);padding:2px 6px;border-radius:6px}
   flex-direction:column;
   gap:14px;
 }
+/* v22: LL and LH placed side-by-side. The panel itself stays the same
+   width as panels above it because they all share .reportMain (max-width
+   1100px, centered). Each quadrant card just becomes half-width inside. */
+.lisaGroups--side{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  align-items:start;
+  gap:14px;
+}
+@media (max-width:780px){
+  .lisaGroups--side{ grid-template-columns:1fr; }
+}
 .lisaQuadGroup{
   border-radius:14px;
   border:1px solid rgba(255,255,255,.07);
