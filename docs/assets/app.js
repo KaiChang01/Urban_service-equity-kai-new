@@ -478,8 +478,186 @@ function renderZChart(c) {
   });
 }
 
+// v25: hardcoded, plain-language Needs & Interventions content per cluster.
+// Authored to be read by non-technical urban planners — full agency names,
+// no acronyms, and explicit time/owner language.
+const HARDCODED_NEEDS = {
+  "0": {
+    needs: [
+      {
+        rank: 1,
+        priority: "HIGH",
+        title: "Surface hidden building maintenance gaps",
+        desc: "These neighborhoods have high rents and aging buildings, yet very few people file 311 service requests. Tenants are likely afraid that complaining could put their housing at risk, so problems go unreported rather than not existing.",
+        owner: "Department of Building Inspection",
+        kpi: "A 25 percent increase in habitability complaints from rent-controlled units within six months. More reporting is the goal — it means tenants feel safe enough to speak up.",
+        actions: [
+          "The Department of Building Inspection runs an annual proactive habitability inspection of every rent-controlled building that is 40 years old or older.",
+          "Publish a public landlord scorecard on DataSF that tracks each landlord's 311 history and update it every month.",
+          "Open an anonymous 311 reporting channel through the city's 211 information line and through trusted community organizations.",
+        ],
+      },
+      {
+        rank: 2,
+        priority: "HIGH",
+        title: "Protect tenants who do report from retaliation",
+        desc: "These same neighborhoods sit on the city's displacement corridor. Residents stay quiet about service issues because losing their housing is a bigger risk than living with the problem.",
+        owner: "San Francisco Rent Board, working with the Mayor's Office of Housing and Community Development",
+        kpi: "Zero cases in which a tenant's identity is shared with their landlord, and outreach reaching at least 90 percent of households in the top ten ZIP codes for displacement.",
+        actions: [
+          "Fund Tenants' Rights outreach in the top ten displacement ZIP codes in Cantonese, Spanish, Tagalog, and Russian.",
+          "Require 311 supervisors to seal any case file that is connected to an active eviction filing.",
+          "Each quarter, cross-check 311 reporting gaps against new petitions filed at the Rent Board.",
+        ],
+      },
+      {
+        rank: 3,
+        priority: "MED",
+        title: "Measure equity inside the cluster, not just across it",
+        desc: "Cluster-level averages hide the gap between high-income and low-income renters who live in the same area. Without breaking the numbers down further, the lowest-income tenants in a wealthy neighborhood become invisible.",
+        owner: "Office of the Controller, working with DataSF",
+        kpi: "An income-tier benchmark adopted by the Controller, with the gap between the 90th-percentile and 10th-percentile response times inside the cluster narrowed to under 10 percent.",
+        actions: [
+          "Split all cluster reporting into low, middle, and high income tiers and publish the breakdown every quarter.",
+          "Pair each grid cell with an infrastructure-risk score based on the age of its buildings.",
+          "Have the Office of the Controller formally approve the new equity benchmark by the end of the third quarter.",
+        ],
+      },
+    ],
+  },
+  "1": {
+    needs: [
+      {
+        rank: 1,
+        priority: "HIGH",
+        title: "Scale street and sidewalk cleaning to match real demand",
+        desc: "Cleaning is the single highest-volume request the city receives in these neighborhoods. The data shows this is a staffing and routing problem, not a behavior problem with residents.",
+        owner: "Department of Public Works",
+        kpi: "Median cleaning request closed within three days, and fewer than 20 percent of locations needing a repeat visit.",
+        actions: [
+          "The Department of Public Works adds one extra weekly sweep on every street that gets at least ten cleaning requests per month.",
+          "Install 300 corner trash bins at the top 50 litter hotspot locations by the end of the third quarter.",
+          "Send a 311 mobile app notification to residents 24 hours before a sweep is scheduled on their street.",
+        ],
+      },
+      {
+        rank: 2,
+        priority: "MED",
+        title: "Shorten the street-tree care cycle",
+        desc: "Tree-related requests are concentrated in the older parts of the urban canopy. When trimming is delayed, the city ends up paying for sidewalk repairs and trip-and-fall claims instead.",
+        owner: "Bureau of Urban Forestry, inside the Department of Public Works",
+        kpi: "90 percent of trees trimmed within 120 days of a request, and fewer than five tree-related trip-and-fall claims per 1,000 trees per year.",
+        actions: [
+          "Move the trimming cycle for trees that are 40 years old or older from once every ten years to once every five years.",
+          "Open the StreetTreeSF reporting tool so any resident can report a tree without creating a login.",
+          "Fund 20 neighborhood tree-stewardship grants of $5,000 each.",
+        ],
+      },
+      {
+        rank: 3,
+        priority: "HIGH",
+        title: "Relieve overcrowding in a way that does not displace residents",
+        desc: "These neighborhoods show high household occupancy and long tenure. Enforcement-only responses tend to push tenants out without actually adding any housing supply.",
+        owner: "Planning Department, Department of Building Inspection, and the Mayor's Office of Housing and Community Development",
+        kpi: "A 20 percent increase in Accessory Dwelling Unit permit applications compared to the prior year, with zero tenants displaced as a result of overcrowding inspections.",
+        actions: [
+          "The Planning Department fast-tracks Accessory Dwelling Unit permits in this cluster to a 90-day decision window.",
+          "The Department of Building Inspection only initiates overcrowding inspections from tenant requests, never from landlord complaints.",
+          "The Mayor's Office of Housing and Community Development publishes an inventory of infill parcels in this cluster within six months.",
+        ],
+      },
+    ],
+  },
+  "2": {
+    needs: [
+      {
+        rank: 1,
+        priority: "CRITICAL",
+        title: "Stand up a formal incident response",
+        desc: "This cluster shows service-request volume more than five standard deviations above the city average, sustained over time. That is not a baseline condition — it is an active service incident and needs to be managed like one.",
+        owner: "Office of the City Administrator",
+        kpi: "Zero open service tickets older than 30 days within the first 45 days, and the incident either fully closed or formally elevated within 90 days.",
+        actions: [
+          "Open a cross-agency incident command for 90 days that includes the Department of Public Works, the Department of Building Inspection, the Healthy Streets Operations Center, and the Department of Public Health.",
+          "On day one, review every open ticket by age — reassign anything actionable and close anything stale that is over 30 days old.",
+          "Hold a daily standup meeting, with the Office of the Controller publicly reporting out the results.",
+        ],
+      },
+      {
+        rank: 2,
+        priority: "CRITICAL",
+        title: "Verify what is actually inside the buildings",
+        desc: "The level of crowding here is consistent with undocumented in-law units or single-room-occupancy conditions. A life-safety inspection has not been done recently enough.",
+        owner: "Department of Building Inspection and the Department of Public Health",
+        kpi: "100 percent of parcels in this cluster inspected, with zero unpermitted units left unresolved by day 120.",
+        actions: [
+          "The Department of Building Inspection completes an exit-route and occupancy audit on every parcel in the cluster within 60 days.",
+          "The Department of Public Health offers free on-site tenant health screenings during the same audit window.",
+          "Freeze any new certificates of occupancy in this cluster until the audit is fully complete.",
+        ],
+      },
+      {
+        rank: 3,
+        priority: "HIGH",
+        title: "Restore livability and public space",
+        desc: "A neighborhood this dense, with almost no positive-service requests showing up, is starved for public space and consistent attention from the city.",
+        owner: "Recreation and Parks Department, working with the Department of Public Works",
+        kpi: "The share of positive service requests in this cluster reaches the citywide median by day 180.",
+        actions: [
+          "The Recreation and Parks Department funds at least one parklet or plaza activation within three blocks of the affected cells.",
+          "The Department of Public Works provides daily street cleaning and graffiti removal every other week for six months.",
+          "Assign a half-time community liaison position to this cluster for 12 months.",
+        ],
+      },
+    ],
+  },
+  "3": {
+    needs: [
+      {
+        rank: 1,
+        priority: "CRITICAL",
+        title: "Break the 30-day backlog of unresolved tickets",
+        desc: "The time it takes to close a service request here is more than five and a half standard deviations slower than the city average. That points to stuck handoffs between departments, not a workload problem.",
+        owner: "311 Customer Service Center",
+        kpi: "90 percent of tickets resolved within 14 days by day 90 of the program.",
+        actions: [
+          "Automatically escalate any ticket open for more than 14 days to the relevant department head, with a service-level deadline attached.",
+          "Clear the cluster's existing 30-day backlog within 45 days.",
+          "Pause new low-priority intake until the backlog falls below 100 open tickets.",
+        ],
+      },
+      {
+        rank: 2,
+        priority: "HIGH",
+        title: "Stabilize the negative-signal complaints",
+        desc: "Encampments, graffiti, and abandoned vehicles tend to compound on each other. Coordinated, batched response works much better than each agency dispatching on its own.",
+        owner: "Healthy Streets Operations Center, working with the Department of Public Works",
+        kpi: "A 40 percent drop in repeat complaints from the same block within six months.",
+        actions: [
+          "The Healthy Streets Operations Center and the Department of Public Works deploy together on the same day, accompanied by a housing navigator.",
+          "Set a graffiti removal deadline of 48 hours from the moment a request is filed.",
+          "Automatically tow abandoned vehicles after 72 hours, with no exceptions.",
+        ],
+      },
+      {
+        rank: 3,
+        priority: "MED",
+        title: "Fix the routing between agencies",
+        desc: "Most of the time lost in this cluster happens when a ticket is handed from one agency to another. This is fixable with better data and routing rules — it does not require new staff.",
+        owner: "311 Customer Service Center, working with DataSF",
+        kpi: "Zero tickets that bounce between more than three agencies, and median handoff time below 24 hours.",
+        actions: [
+          "Publish a public audit of the 311 routing log and a real-time handoff dashboard by the end of the third quarter.",
+          "Reassign case ownership by Supervisor District rather than by service type.",
+          "Send a monthly service-level scorecard to every department head.",
+        ],
+      },
+    ],
+  },
+};
+
 function renderHeuristics(c, target = els.needsAndInterventions) {
-  const h = meta?.heuristics?.[String(c)] ?? meta?.heuristics?.[c];
+  const h = HARDCODED_NEEDS[String(c)] || HARDCODED_NEEDS[c];
   if (!h) {
     if (target) target.textContent = "—";
     return;
@@ -749,11 +927,7 @@ function setupLisaCellPicker() {
       if (qa !== qb) return qa === "LL" ? -1 : 1; // LL first
       return Number(a.properties.equity_score) - Number(b.properties.equity_score);
     },
-    cellLabel: (f, eq) => {
-      const q = f.properties.lisa_quadrant;
-      const eqStr = Number.isFinite(eq) ? eq.toFixed(2) : "—";
-      return `[${q}] #${f.properties.grid_id} \u2014 eq ${eqStr}`;
-    },
+    cellLabel: (f) => `${f.properties.grid_id}`,
   });
 }
 
@@ -852,10 +1026,7 @@ function setupEquityCellPicker() {
       .slice()
       .sort((a, b) => Number(a.properties.equity_score) - Number(b.properties.equity_score));
     cellSel.innerHTML = cells
-      .map((f) => {
-        const eq = Number(f.properties.equity_score);
-        return `<option value="${f.properties.grid_id}">#${f.properties.grid_id} &mdash; eq ${Number.isFinite(eq) ? eq.toFixed(2) : "—"}</option>`;
-      })
+      .map((f) => `<option value="${f.properties.grid_id}">${f.properties.grid_id}</option>`)
       .join("");
     renderForCell();
   };
