@@ -1119,7 +1119,7 @@ async function init() {
     .sort((a, b) => a - b);
   renderLegend();
   setReportCluster("0");
-  renderLisaUnderservedGroups();
+  setupLisaCellPicker();
   renderLowEquityCongregations();
   setupEquityCellPicker();
   setupCellLookup();
